@@ -1,0 +1,8 @@
+TnmsPluginFoundation/obj/*
+TnmsPluginFoundation/bin/*
+TnmsPluginFoundation.Example/obj/*
+TnmsPluginFoundation.Example/bin/*
+
+.idea
+Folder.DotSettings.user
+TnmsPluginFoundation.sln.DotSettings.user
