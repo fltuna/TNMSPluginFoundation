@@ -208,15 +208,9 @@ public abstract class TnmsPluginBase: IModSharpModule
         ConVarConfigurationService.SaveAllConfigToFile();
         ConVarConfigurationService.ExecuteConfigs();
 
-        var adminManagerGetter = _sharedSystem.GetSharpModuleManager().GetDynamicNative(IAdminManager.ModSharpModuleIdentity);
-        if (adminManagerGetter == null)
-            throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
-        
-        if (adminManagerGetter is not IAdminManager.GetAdminManager managerGetter)
-            throw new InvalidOperationException("Obtained IAdminManager.GetAdminManager is a IAdminManager.GetAdminManager!");
-            
-        
-        _adminManager = managerGetter();
+        var adminSystem = _sharedSystem.GetSharpModuleManager().GetRequiredSharpModuleInterface<IAdminManager>(IAdminManager.ModSharpModuleIdentity).Instance;
+
+        _adminManager = adminSystem ?? throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
     }
 
     /// <summary>

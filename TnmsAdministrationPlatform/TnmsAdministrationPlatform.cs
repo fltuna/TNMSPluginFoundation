@@ -48,8 +48,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
 
     public void PostInit()
     {
-        IAdminManager ManagerGetter() => this;
-        _sharedSystem.GetSharpModuleManager().RegisterDynamicNative(this, IAdminManager.ModSharpModuleIdentity, (IAdminManager.GetAdminManager)ManagerGetter);
+        _sharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this, IAdminManager.ModSharpModuleIdentity, (IAdminManager)this);
     }
 
     public void Shutdown()
