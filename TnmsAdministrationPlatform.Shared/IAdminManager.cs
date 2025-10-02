@@ -8,11 +8,6 @@ public interface IAdminManager
     public const string ModSharpModuleIdentity = "TnmsAdministrationPlatform";
     
     /// <summary>
-    /// Get Admin manager from shared insta
-    /// </summary>
-    public delegate IAdminManager GetAdminManager();
-    
-    /// <summary>
     /// Client has permission?
     /// </summary>
     /// <param name="client">Client to check</param>
