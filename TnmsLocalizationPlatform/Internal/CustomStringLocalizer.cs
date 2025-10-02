@@ -73,7 +73,7 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
         LocalizedString format;
         string value;
         
-        if (!TnmsLocalizationPlatform.Instance._clientCultures.TryGetValue(client.Slot, out var culture))
+        if (!TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
         {
             format = this[name];
             value = string.Format(format.Value, arguments);

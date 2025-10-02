@@ -7,6 +7,7 @@ using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform;
 using TnmsExtendableTargeting.Shared;
+using TnmsLocalizationPlatform.Shared;
 using TnmsPluginFoundation.Interfaces;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Logger;
@@ -14,7 +15,7 @@ using TnmsPluginFoundation.Models.Plugin;
 
 namespace TnmsPluginFoundation;
 
-public abstract class TnmsPlugin: IModSharpModule
+public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
 {
     protected TnmsPlugin(ISharedSystem  sharedSystem,
         string         dllPath,
@@ -53,7 +54,10 @@ public abstract class TnmsPlugin: IModSharpModule
 
     public static IAdminManager AdminManager => _adminManager;
     private static IAdminManager _adminManager = null!;
-    
+
+    public ITnmsLocalizer Localizer { get; private set; } = null!;
+
+    public string ModuleDirectory => "PathToModule";
     
 
     /*
@@ -219,6 +223,11 @@ public abstract class TnmsPlugin: IModSharpModule
         var extendableTargeting = _sharedSystem.GetSharpModuleManager()
             .GetRequiredSharpModuleInterface<IExtendableTargeting>(IExtendableTargeting.ModSharpModuleIdentity).Instance;
         _extendableTargeting = extendableTargeting ?? throw new InvalidOperationException("TnmsExtendableTargeting is not found! Make sure TnmsExtendableTargeting is installed!");
+
+        var tnmsLocalizer = _sharedSystem.GetSharpModuleManager()
+            .GetRequiredSharpModuleInterface<ITnmsLocalizationPlatform>(
+                ITnmsLocalizationPlatform.ModSharpModuleIdentity).Instance;
+        Localizer = tnmsLocalizer?.CreateStringLocalizer(this) ?? throw new InvalidOperationException("TnmsLocalizationPlatform is not found! Make sure TnmsLocalizationPlatform is installed!");
     }
 
     /// <summary>
@@ -256,18 +265,6 @@ public abstract class TnmsPlugin: IModSharpModule
     {
         ServiceProvider = ServiceCollection.BuildServiceProvider();
     }
-    
-    /// <summary>
-    /// Localize string with plugin prefix.
-    /// </summary>
-    /// <param name="languageKey">Language Key</param>
-    /// <param name="args">Any args that can be use ToString()</param>
-    /// <returns>"{PluginPrefix} {LocalizedString}"</returns>
-    [Obsolete("This method is deprecated, please use PluginModuleBase::LocalizeWithPluginPrefix()", true)]
-    public string LocalizeStringWithPluginPrefix(string languageKey, params object[] args)
-    {
-        return $"{PluginPrefix} {LocalizeString(languageKey, args)}";
-    }
 
     /// <summary>
     /// Same as Plugin.Localizer[langaugeKey, args]
@@ -277,8 +274,7 @@ public abstract class TnmsPlugin: IModSharpModule
     /// <returns>Translated result</returns>
     public string LocalizeString(string localizationKey, params object[] args)
     {
-        // TODO() Implement Localizer
-        return "";
+        return Localizer[localizationKey, args];
     }
     
     /// <summary>
@@ -290,8 +286,7 @@ public abstract class TnmsPlugin: IModSharpModule
     /// <returns>Translated result as player's language</returns>
     public string LocalizeStringForPlayer(IGameClient client, string localizationKey, params object[] args)
     {
-        // TODO() Implement Player Based Localizer
-        return "";
+        return Localizer.ForClient(client, localizationKey, args);
     }
     
 

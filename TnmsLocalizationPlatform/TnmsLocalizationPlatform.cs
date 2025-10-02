@@ -5,6 +5,7 @@ using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
+using TnmsLocalizationPlatform.Internal;
 using TnmsLocalizationPlatform.Shared;
 
 namespace TnmsLocalizationPlatform;
@@ -40,7 +41,7 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
     public string DisplayAuthor => "faketuna";
     
     internal static TnmsLocalizationPlatform Instance { get; private set; } = null!;
-    internal readonly Dictionary<byte, CultureInfo> _clientCultures = new();
+    internal readonly Dictionary<byte, CultureInfo> ClientCultures = new();
     // TODO() Get ServerDefault culture from config
     internal CultureInfo ServerDefaultCulture { get; set; }  = new CultureInfo("en-US");
     
@@ -48,7 +49,13 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
     {
         Instance = this;
         Logger.LogInformation("TnmsLocalizationPlatform initialized");
+        
         return true;
+    }
+
+    public void PostInit()
+    {
+        SharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this, ITnmsLocalizationPlatform.ModSharpModuleIdentity, (ITnmsLocalizationPlatform)this);
     }
 
     public void Shutdown()
@@ -58,7 +65,8 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
 
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
     {
-        throw new NotImplementedException();
+        // TODO() Add language data loading feature
+        return new CustomStringLocalizer(new Dictionary<string, Dictionary<string, string>>());
     }
 
 
@@ -69,13 +77,13 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
             if (status != QueryConVarValueStatus.ValueIntact)
                 throw new InvalidOperationException("Failed to get client language");
             
-            _clientCultures[gameClient.Slot] = CultureInfo.GetCultureInfo(value);
+            ClientCultures[gameClient.Slot] = CultureInfo.GetCultureInfo(value);
         });
     }
 
     public void OnClientDisconnected(IGameClient client, NetworkDisconnectionReason reason)
     {
-        _clientCultures.Remove(client.Slot);
+        ClientCultures.Remove(client.Slot);
     }
     
     

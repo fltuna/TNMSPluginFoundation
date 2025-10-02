@@ -9,7 +9,8 @@
   <ItemGroup>
     <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
     <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
-    <ProjectReference Include="..\TnmsExtendableTargeting\TnmsExtendableTargeting.csproj"  Private="false" ExcludeAssets="runtime"/>
+    <ProjectReference Include="..\TnmsExtendableTargeting.Shared\TnmsExtendableTargeting.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
+    <ProjectReference Include="..\TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
   </ItemGroup>
   
   <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
