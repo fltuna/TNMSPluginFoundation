@@ -27,7 +27,7 @@ public abstract class TnmsAbstractCommandBase(IServiceProvider provider): Plugin
     /// </summary>
     public virtual ConVarFlags ConVarFlags { get; } = ConVarFlags.None;
 
-    public virtual TnmsCommandRegistrationType CommandRegistrationType { get; } = 0;
+    public abstract TnmsCommandRegistrationType CommandRegistrationType { get; }
     
     /// <summary>
     /// Default validation failure message 

@@ -10,10 +10,11 @@ public class FirstTestCommand(IServiceProvider provider) : TnmsAbstractCommandBa
     // ms_ is automatically declared so we don't need to specify here
     public override string CommandName => "first";
     public override string CommandDescription => "This is the first test command.";
-    
+    public override TnmsCommandRegistrationType CommandRegistrationType { get; } = TnmsCommandRegistrationType.Client | TnmsCommandRegistrationType.Server;
+
     protected override void ExecuteCommand(IGameClient? player, StringCommand commandInfo, ValidatedArguments? validatedArguments)
     {
-        Plugin.Logger.LogInformation($"cmdName: {commandInfo.CommandName}, arguments: {validatedArguments}, is chat trigger: {commandInfo.ChatTrigger}");
+        Plugin.Logger.LogInformation($"cmdName: {commandInfo.CommandName}, arguments: {commandInfo.ArgString}, is chat trigger: {commandInfo.ChatTrigger}");
         
         Plugin.Logger.LogInformation("Executed");
     }

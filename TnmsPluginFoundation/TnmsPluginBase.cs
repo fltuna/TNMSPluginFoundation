@@ -360,7 +360,7 @@ public abstract class TnmsPluginBase: IModSharpModule
             SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
         
         if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
-            SharedSystem.GetConVarManager().CreateConsoleCommand(command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
+            SharedSystem.GetConVarManager().CreateConsoleCommand("ms_" + command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
 
         TnmsAbstractedCommands.Add(command);
     }
@@ -379,7 +379,7 @@ public abstract class TnmsPluginBase: IModSharpModule
             SharedSystem.GetClientManager().RemoveCommandCallback(command.CommandName, command.Execute);
         
         if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
-            SharedSystem.GetConVarManager().ReleaseCommand(command.CommandName);
+            SharedSystem.GetConVarManager().ReleaseCommand("ms_" + command.CommandName);
 
         TnmsAbstractedCommands.Remove(command);
     }
