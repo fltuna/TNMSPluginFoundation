@@ -11,6 +11,13 @@ namespace TnmsPluginFoundation.Utils.Entity;
 /// </summary>
 public static class PlayerUtil
 {
+    private static IGameEvent? _nextLevelChangedEvent;
+
+    private static IGameEvent? GetNextLevelChangedEvent()
+    {
+        return _nextLevelChangedEvent ??= TnmsPluginBase.StaticSharedSystem.GetEventManager().CreateEvent("nextlevel_changed", true);
+    }
+    
     /// <summary>
     /// Check player is alive
     /// </summary>
