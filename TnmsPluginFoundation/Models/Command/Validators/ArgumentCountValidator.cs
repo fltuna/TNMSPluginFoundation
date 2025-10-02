@@ -20,7 +20,7 @@ public class ArgumentCountValidator : CommandValidatorBase
     public ArgumentCountValidator(int minArguments, bool dontNotifyWhenFailed = false)
     {
         _userSpecifiedMinArguments = Math.Max(0, minArguments);
-        _minArguments = Math.Max(1, minArguments + 1); // +1 for command name
+        _minArguments = Math.Max(1, minArguments);
         _dontNotifyWhenFailed = dontNotifyWhenFailed;
     }
 

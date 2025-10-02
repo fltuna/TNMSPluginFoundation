@@ -137,8 +137,8 @@ public abstract class TnmsAbstractCommandBase(IServiceProvider provider): Plugin
     /// <summary>
     /// Command body - implement in derived classes
     /// </summary>
-    /// <param name="player">Player who executed the command</param>
+    /// <param name="client">Player who executed the command</param>
     /// <param name="commandInfo">Command information</param>
     /// <param name="validatedArguments">Validated arguments (null if no validator was used or validation didn't populate arguments)</param>
-    protected abstract void ExecuteCommand(IGameClient? player, StringCommand commandInfo, ValidatedArguments? validatedArguments);
+    protected abstract void ExecuteCommand(IGameClient? client, StringCommand commandInfo, ValidatedArguments? validatedArguments);
 }

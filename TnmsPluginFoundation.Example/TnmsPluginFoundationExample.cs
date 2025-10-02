@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using TnmsPluginFoundation.Example.Modules;
+using TnmsPluginFoundation.Example.Modules.PermissionTest;
 using TnmsPluginFoundation.Example.Modules.TestCommand;
 using TnmsPluginFoundation.Example.Modules.TestEventListener;
 
@@ -27,6 +28,7 @@ public class TnmsPluginFoundationExample(
     {
         RegisterModule<TestModule>(hotReload);
         RegisterModule<TestCommand>();
+        RegisterModule<TnmsPermissionTest>();
         RegisterModule<TestEventListener>();
         Logger.LogInformation("Hello from the TnmsPluginFoundation.Example at TnmsOnPluginLoad()");
     }

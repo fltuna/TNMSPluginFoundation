@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
+    <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Core\Administration\" />
+    <Folder Include="Core\Localization\" />
     <Folder Include="Core\Targeting\" />
   </ItemGroup>
   

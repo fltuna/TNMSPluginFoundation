@@ -5,6 +5,7 @@ using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
+using TnmsAdministrationPlatform;
 using TnmsPluginFoundation.Interfaces;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Logger;
@@ -39,18 +40,15 @@ public abstract class TnmsPluginBase: IModSharpModule
     private readonly bool _hotReload;
 
     /// <summary>
-    /// ModSharp Shared system
+    /// ModSharp Shared system / Shared Modules
     /// </summary>
-    public static ISharedSystem StaticSharedSystem
-    {
-        get => _sharedSystem;
-        private set
-        {
-            if (_sharedSystem != value)
-                return;
-            _sharedSystem = value;
-        }
-    }
+    public static ISharedSystem StaticSharedSystem => _sharedSystem;
+
+
+    public static IAdminManager AdminManager => _adminManager;
+    private static IAdminManager _adminManager = null!;
+    
+    
 
     /*
      * Mod Sharp Related
@@ -209,6 +207,16 @@ public abstract class TnmsPluginBase: IModSharpModule
         CallModulesAllPluginsLoaded();
         ConVarConfigurationService.SaveAllConfigToFile();
         ConVarConfigurationService.ExecuteConfigs();
+
+        var adminManagerGetter = _sharedSystem.GetSharpModuleManager().GetDynamicNative(IAdminManager.ModSharpModuleIdentity);
+        if (adminManagerGetter == null)
+            throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
+        
+        if (adminManagerGetter is not IAdminManager.GetAdminManager managerGetter)
+            throw new InvalidOperationException("Obtained IAdminManager.GetAdminManager is a IAdminManager.GetAdminManager!");
+            
+        
+        _adminManager = managerGetter();
     }
 
     /// <summary>

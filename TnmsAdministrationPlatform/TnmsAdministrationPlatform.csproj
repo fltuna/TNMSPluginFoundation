@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -7,13 +8,13 @@
 
     <ItemGroup>
         <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
-        <ProjectReference Include="..\TnmsPluginFoundation\TnmsPluginFoundation.csproj" Private="false" ExcludeAssets="runtime"/>
+        <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
     </ItemGroup>
-
+    
     <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
         <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
         <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb" DestinationFolder="$(MOD_SHARP_DIR)\modules\$(ProjectName)\reload" />
         <Message Text="Successfully copied the plugin files" Importance="High" />
     </Target>
-    
+
 </Project>

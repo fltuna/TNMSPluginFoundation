@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsPluginFoundation", "TNM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsPluginFoundation.Example", "TnmsPluginFoundation.Example\TnmsPluginFoundation.Example.csproj", "{CA5512F5-8732-4A7B-8EAB-EA90A6366932}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsAdministrationPlatform.Shared", "TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj", "{7D5EF13E-D2F7-441A-99D8-6A6C95C01F8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsAdministrationPlatform", "TnmsAdministrationPlatform\TnmsAdministrationPlatform.csproj", "{161E87A0-73BE-498F-910C-0384DAD66DC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{CA5512F5-8732-4A7B-8EAB-EA90A6366932}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA5512F5-8732-4A7B-8EAB-EA90A6366932}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA5512F5-8732-4A7B-8EAB-EA90A6366932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D5EF13E-D2F7-441A-99D8-6A6C95C01F8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D5EF13E-D2F7-441A-99D8-6A6C95C01F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D5EF13E-D2F7-441A-99D8-6A6C95C01F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D5EF13E-D2F7-441A-99D8-6A6C95C01F8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

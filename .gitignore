@@ -2,6 +2,11 @@ TnmsPluginFoundation/obj/*
 TnmsPluginFoundation/bin/*
 TnmsPluginFoundation.Example/obj/*
 TnmsPluginFoundation.Example/bin/*
+TnmsAdministrationPlatform/bin/*
+TnmsAdministrationPlatform/obj/*
+TnmsAdministrationPlatform.Shared/bin/*
+TnmsAdministrationPlatform.Shared/obj/*
+
 
 .idea
 Folder.DotSettings.user

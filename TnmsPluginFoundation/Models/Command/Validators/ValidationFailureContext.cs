@@ -17,7 +17,7 @@ public class ValidationFailureContext
     /// <summary>
     /// The player who executed the command
     /// </summary>
-    public IGameClient? Player { get; }
+    public IGameClient? Client { get; }
     
     /// <summary>
     /// Command information
@@ -43,13 +43,13 @@ public class ValidationFailureContext
     /// Initializes a new ValidationFailureContext
     /// </summary>
     /// <param name="validator">The validator that failed</param>
-    /// <param name="player">The player who executed the command</param>
+    /// <param name="client">The player who executed the command</param>
     /// <param name="commandInfo">Command information</param>
     /// <param name="validationResult">Basic validation result</param>
-    public ValidationFailureContext(ICommandValidator validator, IGameClient? player, StringCommand commandInfo, TnmsCommandValidationResult validationResult)
+    public ValidationFailureContext(ICommandValidator validator, IGameClient? client, StringCommand commandInfo, TnmsCommandValidationResult validationResult)
     {
         Validator = validator;
-        Player = player;
+        Client = client;
         CommandInfo = commandInfo;
         ValidationResult = validationResult;
         
