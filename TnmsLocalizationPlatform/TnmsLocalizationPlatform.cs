@@ -47,11 +47,13 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
     public bool Init()
     {
         Instance = this;
+        Logger.LogInformation("TnmsLocalizationPlatform initialized");
         return true;
     }
 
     public void Shutdown()
     {
+        Logger.LogInformation("TnmsLocalizationPlatform shutdown");
     }
 
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
@@ -73,6 +75,7 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
 
     public void OnClientDisconnected(IGameClient client, NetworkDisconnectionReason reason)
     {
+        _clientCultures.Remove(client.Slot);
     }
     
     

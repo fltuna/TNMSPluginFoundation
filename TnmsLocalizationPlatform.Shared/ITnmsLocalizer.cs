@@ -6,6 +6,10 @@ namespace TnmsLocalizationPlatform.Shared;
 
 public interface ITnmsLocalizer: IStringLocalizer
 {
+    public LocalizedString this[string name, CultureInfo culture] { get; }
+    
+    public LocalizedString this[string name, CultureInfo culture, params object[] arguments] { get; }
+    
     public LocalizedString ForClient(IGameClient client, string name, params object[] arguments);
     
     public IEnumerable<LocalizedString> GetAllStringsByCulture(CultureInfo culture);
