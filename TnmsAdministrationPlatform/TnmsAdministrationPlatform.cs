@@ -60,7 +60,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     public void OnClientConnected(IGameClient client)
     {
-        // TODO() Add permission loading feature from cached config
+        // TODO() Add permission loading feature from cached config or DB
         if (!_userPermissions.ContainsKey(client.SteamId.AccountId))
         {
             _userPermissions[client.SteamId.AccountId] = new AdminUser(client);
@@ -108,6 +108,16 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     public bool RemovePermissionFromClient(IGameClient client, string permission)
     {
         return _userPermissions[client.SteamId.AccountId].Permissions.Remove(permission);
+    }
+    
+    public bool AddClientToGroup(IGameClient client, string groupName)
+    {
+        return _userPermissions[client.SteamId.AccountId].Groups.Add(groupName);
+    }
+
+    public bool RemoveClientFromGroup(IGameClient client, string groupName)
+    {
+        return _userPermissions[client.SteamId.AccountId].Groups.Remove(groupName);
     }
 
     public IAdminUser GetAdminInformation(IGameClient client)

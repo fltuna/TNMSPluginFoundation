@@ -33,6 +33,22 @@ public interface IAdminManager
     public bool RemovePermissionFromClient(IGameClient client, string permission);
     
     /// <summary>
+    /// Add client to admin group
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="groupName"></param>
+    /// <returns></returns>
+    public bool AddClientToGroup(IGameClient client, string groupName);
+    
+    /// <summary>
+    /// Remove client from admin group
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="groupName"></param>
+    /// <returns></returns>
+    public bool RemoveClientFromGroup(IGameClient client, string groupName);
+    
+    /// <summary>
     /// Get admin information associated with specified client
     /// </summary>
     /// <param name="client"></param>
