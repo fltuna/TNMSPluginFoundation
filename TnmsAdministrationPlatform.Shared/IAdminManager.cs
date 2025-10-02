@@ -4,7 +4,7 @@ namespace TnmsAdministrationPlatform;
 
 public interface IAdminManager
 {
-    public const string RootPermissionNode = "tnms.root";
+    public const string RootPermissionWildCard = "*";
     public const string ModSharpModuleIdentity = "TnmsAdministrationPlatform";
     
     /// <summary>

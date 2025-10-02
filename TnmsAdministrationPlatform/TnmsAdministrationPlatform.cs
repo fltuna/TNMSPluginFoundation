@@ -86,8 +86,13 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         if (!_userPermissions.TryGetValue(client.SteamId.AccountId, out var set))
             return false;
         
-        if (set.Contains(IAdminManager.RootPermissionNode))
+        if (set.Contains(IAdminManager.RootPermissionWildCard))
             return true;
+        
+        // TODO()
+        // Implement wildcard matching system
+        // if test.command.A, test.command.B is exists and player have test.command.*
+        // Then player can execute both.
         
         return set.Contains(permission);
     }
