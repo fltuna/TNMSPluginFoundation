@@ -350,11 +350,18 @@ public abstract class TnmsPluginBase: IModSharpModule
     /// Add TnmsAbstracted command to ModSharp
     /// </summary>
     /// <param name="command">Classes that inherited TnmsAbstractCommandBase</param>
+    /// <param name="registrationType">Command regstration type</param>
     public void AddTnmsCommand(TnmsAbstractCommandBase command)
     {
-        Logger.LogCritical("INITIALIZE CMD {cmd}", command.CommandName);
-        SharedSystem.GetConVarManager().CreateConsoleCommand(command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
-        SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
+        if (command.CommandRegistrationType == 0)
+            throw new ArgumentException("Command registration type should have at least 1 flag!");
+        
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
+            SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
+        
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
+            SharedSystem.GetConVarManager().CreateConsoleCommand(command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
+
         TnmsAbstractedCommands.Add(command);
     }
 
@@ -362,10 +369,18 @@ public abstract class TnmsPluginBase: IModSharpModule
     /// Remove TnmsAbstracted command to ModSharp
     /// </summary>
     /// <param name="command">Classes that inherited TnmsAbstractCommandBase</param>
+    /// <param name="registrationType">Command regstration type</param>
     public void RemoveTnmsCommand(TnmsAbstractCommandBase command)
     {
-        SharedSystem.GetConVarManager().ReleaseCommand(command.CommandName);
-        SharedSystem.GetClientManager().RemoveCommandCallback(command.CommandName, command.Execute);
+        if (command.CommandRegistrationType == 0)
+            throw new ArgumentException("Command registration type should have at least 1 flag!");
+        
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
+            SharedSystem.GetClientManager().RemoveCommandCallback(command.CommandName, command.Execute);
+        
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
+            SharedSystem.GetConVarManager().ReleaseCommand(command.CommandName);
+
         TnmsAbstractedCommands.Remove(command);
     }
 }
