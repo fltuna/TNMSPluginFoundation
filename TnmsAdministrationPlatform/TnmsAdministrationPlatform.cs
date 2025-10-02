@@ -65,6 +65,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     public void OnClientConnected(IGameClient client)
     {
+        // TODO() Add permission loading feature from cached config
         if (!_userPermissions.ContainsKey(client.SteamId.AccountId))
         {
             _userPermissions[client.SteamId.AccountId] = new HashSet<string>();
