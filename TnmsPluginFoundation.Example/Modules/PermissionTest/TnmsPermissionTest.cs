@@ -14,5 +14,6 @@ public class TnmsPermissionTest(IServiceProvider serviceProvider) : PluginModule
         RegisterTnmsCommand<AddPermission>();
         RegisterTnmsCommand<PermissionCheck>();
         RegisterTnmsCommand<RemovePermission>();
+        RegisterTnmsCommand<VariablePermissionCheck>();
     }
 }

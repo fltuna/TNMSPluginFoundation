@@ -29,7 +29,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         ArgumentNullException.ThrowIfNull(coreConfiguration);
     }
     
-    private readonly Dictionary<ulong, HashSet<string>> _userPermissions = new();
+    private readonly Dictionary<ulong, IAdminUser> _userPermissions = new();
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 20;
@@ -53,10 +53,6 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
 
     public void Shutdown()
     {
-        foreach (var (_, value) in _userPermissions)
-        {
-            value.Clear();
-        }
         _userPermissions.Clear();
         _sharedSystem.GetClientManager().RemoveClientListener(this);
         _logger.LogInformation("Unloaded TnmsAdministrationPlatform");
@@ -67,14 +63,13 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         // TODO() Add permission loading feature from cached config
         if (!_userPermissions.ContainsKey(client.SteamId.AccountId))
         {
-            _userPermissions[client.SteamId.AccountId] = new HashSet<string>();
+            _userPermissions[client.SteamId.AccountId] = new AdminUser(client);
         }
     }
 
     public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
     {
-        _userPermissions.Remove(client.SteamId.AccountId, out var set);
-        set?.Clear();
+        _userPermissions.Remove(client.SteamId.AccountId);
     }
 
     public bool ClientHasPermission(IGameClient? client, string permission)
@@ -83,27 +78,40 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         if (client == null)
             return true;
         
-        if (!_userPermissions.TryGetValue(client.SteamId.AccountId, out var set))
+        if (!_userPermissions.TryGetValue(client.SteamId.AccountId, out var adminUser))
             return false;
         
-        if (set.Contains(IAdminManager.RootPermissionWildCard))
+        if (adminUser.Permissions.Contains(IAdminManager.RootPermissionWildCard))
             return true;
         
-        // TODO()
-        // Implement wildcard matching system
-        // if test.command.A, test.command.B is exists and player have test.command.*
-        // Then player can execute both.
+        if (adminUser.Permissions.Contains(permission))
+            return true;
         
-        return set.Contains(permission);
+        foreach (var userPerm in adminUser.Permissions)
+        {
+            if (!userPerm.EndsWith(".*"))
+                continue;
+                
+            var prefix = userPerm.Substring(0, userPerm.Length - 1);
+            if (permission.StartsWith(prefix))
+                return true;
+        }
+        
+        return false;
     }
 
     public bool AddPermissionToClient(IGameClient client, string permission)
     {
-        return _userPermissions[client.SteamId.AccountId].Add(permission);
+        return _userPermissions[client.SteamId.AccountId].Permissions.Add(permission);
     }
 
     public bool RemovePermissionFromClient(IGameClient client, string permission)
     {
-        return _userPermissions[client.SteamId.AccountId].Remove(permission);
+        return _userPermissions[client.SteamId.AccountId].Permissions.Remove(permission);
+    }
+
+    public IAdminUser GetAdminInformation(IGameClient client)
+    {
+        return _userPermissions[client.SteamId.AccountId];
     }
 }

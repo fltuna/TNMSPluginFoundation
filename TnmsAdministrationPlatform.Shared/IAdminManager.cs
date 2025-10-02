@@ -31,4 +31,11 @@ public interface IAdminManager
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
     /// <returns>true if permission is successfully removed from client, false if player don't have specified permission</returns>
     public bool RemovePermissionFromClient(IGameClient client, string permission);
+    
+    /// <summary>
+    /// Get admin information associated with specified client
+    /// </summary>
+    /// <param name="client"></param>
+    /// <returns></returns>
+    public IAdminUser GetAdminInformation(IGameClient client);
 }
