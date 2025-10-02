@@ -13,7 +13,7 @@ namespace TnmsPluginFoundation.Models.Command;
 public abstract class TnmsAbstractCommandBase(IServiceProvider provider): PluginTranslatableFeatureBase(provider)
 {
     /// <summary>
-    /// Name of command (e.g. css_tset)
+    /// Name of command (e.g. test)  'ms_' prefix is automatically declared so we don't need to specify here
     /// </summary>
     public abstract string CommandName { get; }
     

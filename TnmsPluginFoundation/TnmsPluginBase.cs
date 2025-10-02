@@ -125,7 +125,7 @@ public abstract class TnmsPluginBase: IModSharpModule
     protected virtual void RegisterRequiredPluginServices(IServiceCollection collection ,IServiceProvider provider){}
     
     /// <summary>
-    /// You can register any services. for instance: external feature obtained from CSSharp's PluginCapability.<br/>
+    /// You can register any services. for instance: external feature obtained from ModSharp's ModuleManager.<br/>
     /// This is a final chance of registering services to DI container.
     /// </summary>
     /// <param name="collection"></param>

@@ -24,7 +24,7 @@ public abstract class AbstractDebugLoggerBase: IDebugLogger
     public abstract bool PrintToAdminClientsConsole { get; }
 
     /// <summary>
-    /// Required flag for recognize as an admin user. (e.g. "css/generic")
+    /// Required flag for recognize as an admin user. (e.g. "required.permission")
     /// </summary>
     public abstract string RequiredFlagForPrintToConsole { get; }
     

@@ -20,7 +20,7 @@ public class TnmsPluginFoundationExample(
     public override string DisplayName => "TnmsPluginFoundation.Example";
     public override string DisplayAuthor => "faketuna";
     public override string BaseCfgDirectoryPath => "unused";
-    public override string ConVarConfigPath => Path.Combine(SharedSystem.GetModSharp().GetGamePath(), "cfg/TNCSSExamplePlugin/TNCSSExamplePlugin.cfg");
+    public override string ConVarConfigPath => Path.Combine(SharedSystem.GetModSharp().GetGamePath(), "cfg/TNMSExamplePlugin/TNMSExamplePlugin.cfg");
     public override string PluginPrefix => "TNMSPF";
     public override bool UseTranslationKeyInPluginPrefix => false;
 
