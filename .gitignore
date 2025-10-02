@@ -1,11 +1,18 @@
 TnmsPluginFoundation/obj/*
 TnmsPluginFoundation/bin/*
+
 TnmsPluginFoundation.Example/obj/*
 TnmsPluginFoundation.Example/bin/*
+
 TnmsAdministrationPlatform/bin/*
 TnmsAdministrationPlatform/obj/*
 TnmsAdministrationPlatform.Shared/bin/*
 TnmsAdministrationPlatform.Shared/obj/*
+
+TnmsLocalizationPlatform/bin/*
+TnmsLocalizationPlatform/obj/*
+TnmsLocalizationPlatform.Shared/bin/*
+TnmsLocalizationPlatform.Shared/Obj/*
 
 
 .idea

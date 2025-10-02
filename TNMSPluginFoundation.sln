@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsAdministrationPlatform.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsAdministrationPlatform", "TnmsAdministrationPlatform\TnmsAdministrationPlatform.csproj", "{161E87A0-73BE-498F-910C-0384DAD66DC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsLocalizationPlatform", "TnmsLocalizationPlatform\TnmsLocalizationPlatform.csproj", "{00083F50-29CB-46E1-BF51-A52EC26F474A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TnmsLocalizationPlatform.Shared", "TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj", "{24DBEA9A-F4D5-462E-889A-27044F562D2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{161E87A0-73BE-498F-910C-0384DAD66DC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00083F50-29CB-46E1-BF51-A52EC26F474A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00083F50-29CB-46E1-BF51-A52EC26F474A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00083F50-29CB-46E1-BF51-A52EC26F474A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00083F50-29CB-46E1-BF51-A52EC26F474A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DBEA9A-F4D5-462E-889A-27044F562D2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DBEA9A-F4D5-462E-889A-27044F562D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DBEA9A-F4D5-462E-889A-27044F562D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DBEA9A-F4D5-462E-889A-27044F562D2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
