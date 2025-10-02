@@ -32,7 +32,7 @@ public static class CsTeamUtil
         // TODO() Maybe ↓ ?
         // EntityUtil.GetTeam(CStrikeTeam.TE)!.GlobalName = teamName;
         
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().ServerCommand(cmd);
+        TnmsPlugin.StaticSharedSystem.GetModSharp().ServerCommand(cmd);
         return true;
     }
 
@@ -79,7 +79,7 @@ public static class CsTeamUtil
             cmd = $"mp_teamlogo_2 {logo}";
         }
         
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().ServerCommand(cmd);
+        TnmsPlugin.StaticSharedSystem.GetModSharp().ServerCommand(cmd);
         return true;
     }
 }

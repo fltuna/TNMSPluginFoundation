@@ -13,9 +13,9 @@ using TnmsPluginFoundation.Models.Plugin;
 
 namespace TnmsPluginFoundation;
 
-public abstract class TnmsPluginBase: IModSharpModule
+public abstract class TnmsPlugin: IModSharpModule
 {
-    protected TnmsPluginBase(ISharedSystem  sharedSystem,
+    protected TnmsPlugin(ISharedSystem  sharedSystem,
         string         dllPath,
         string         sharpPath,
         Version?       version,
@@ -31,7 +31,7 @@ public abstract class TnmsPluginBase: IModSharpModule
         _hotReload = hotReload;
 
         var   factory = _sharedSystem.GetLoggerFactory();
-        var   logger  = factory.CreateLogger<TnmsPluginBase>();
+        var   logger  = factory.CreateLogger<TnmsPlugin>();
 
         Logger = logger;
         GameData = _sharedSystem.GetModSharp().GetGameData();
@@ -166,7 +166,6 @@ public abstract class TnmsPluginBase: IModSharpModule
         
         // Call customizable OnLoad method
         TnmsOnPluginLoad(_hotReload);
-        TnmsLateOnPluginLoad(ServiceProvider);
         return true;
     }
 
@@ -182,11 +181,11 @@ public abstract class TnmsPluginBase: IModSharpModule
     /// </summary>
     public void PostInit()
     {
-        // TODO() Implement post init forward
+        TnmsLateOnPluginLoad(ServiceProvider);
     }
 
     /// <summary>
-    /// You can register plugin capability here.
+    /// You can register custom module here.
     /// All modules registered DI dependency is accessible in here.
     /// </summary>
     protected virtual void TnmsLateOnPluginLoad(ServiceProvider provider){}

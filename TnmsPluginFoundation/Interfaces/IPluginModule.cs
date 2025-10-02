@@ -11,18 +11,18 @@ public interface IPluginModule
     string PluginModuleName { get; }
 
     /// <summary>
-    /// This method called when module is registering in main plugin class using <see cref="TnmsPluginBase.RegisterModule{T}()"/>
+    /// This method called when module is registering in main plugin class using <see cref="TnmsPlugin.RegisterModule{T}()"/>
     /// </summary>
     public void Initialize();
     
     
     /// <summary>
-    /// This method called after when all plugins loaded in main plugin class using <see cref="TnmsPluginBase.CallModulesAllPluginsLoaded()"/>
+    /// This method called after when all plugins loaded in main plugin class using <see cref="TnmsPlugin.CallModulesAllPluginsLoaded()"/>
     /// </summary>
     public void AllPluginsLoaded();
     
     /// <summary>
-    /// This method called when plugins unloading in main plugin class using <see cref="TnmsPluginBase.UnloadAllModules()"/>
+    /// This method called when plugins unloading in main plugin class using <see cref="TnmsPlugin.UnloadAllModules()"/>
     /// </summary>
     public void UnloadModule();
 }

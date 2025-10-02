@@ -102,17 +102,17 @@ public abstract class AbstractDebugLoggerBase: IDebugLogger
 
     private void PrintInformation(string debugLevelPrefix ,string information)
     {
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().InvokeAction(() =>
+        TnmsPlugin.StaticSharedSystem.GetModSharp().InvokeAction(() =>
         {
             string msg = $"{LogPrefix} {debugLevelPrefix} {information}";
         
-            TnmsPluginBase.StaticSharedSystem.GetModSharp().LogMessage(msg);
+            TnmsPlugin.StaticSharedSystem.GetModSharp().LogMessage(msg);
 
             if (!PrintToAdminClientsConsole)
                 return;
             
             
-            foreach (var client in TnmsPluginBase.StaticSharedSystem.GetModSharp().GetIServer().GetGameClients())
+            foreach (var client in TnmsPlugin.StaticSharedSystem.GetModSharp().GetIServer().GetGameClients())
             {
                 if (client.IsFakeClient || client.IsHltv)
                     continue;

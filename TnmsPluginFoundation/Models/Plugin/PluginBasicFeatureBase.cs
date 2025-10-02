@@ -16,17 +16,17 @@ public abstract class PluginBasicFeatureBase(IServiceProvider serviceProvider)
     /// <summary>
     /// Main plugin instance, for registering the commands, listeners, etc...
     /// </summary>
-    protected readonly TnmsPluginBase Plugin = serviceProvider.GetRequiredService<TnmsPluginBase>();
+    protected readonly TnmsPlugin Plugin = serviceProvider.GetRequiredService<TnmsPlugin>();
     
     /// <summary>
     /// ModSharp Shared system
     /// </summary>
-    protected readonly ISharedSystem SharedSystem = serviceProvider.GetRequiredService<TnmsPluginBase>().SharedSystem;
+    protected readonly ISharedSystem SharedSystem = serviceProvider.GetRequiredService<TnmsPlugin>().SharedSystem;
     
     /// <summary>
     /// Logger from main plugin instance.
     /// </summary>
-    protected readonly ILogger Logger = serviceProvider.GetRequiredService<TnmsPluginBase>().Logger;
+    protected readonly ILogger Logger = serviceProvider.GetRequiredService<TnmsPlugin>().Logger;
     
     /// <summary>
     /// Custom debug logger for simple logging. If you didn't make custom implementation of IDebugLogger, it will do nothing.

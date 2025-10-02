@@ -99,7 +99,7 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
     
     /// <summary>
     /// Called when all plugins loaded, so you can late initialize your module.<br/>
-    /// For instance, obtaining the plugin capability, or registered self services.
+    /// For instance, obtaining the ModSharp module, or registered self services.
     /// </summary>
     protected virtual void OnAllModulesLoaded()
     {

@@ -29,7 +29,7 @@ public class AddPermission(IServiceProvider provider) : TnmsAbstractCommandBase(
 
         var permission = commandInfo.GetArg(1);
 
-        if (TnmsPluginBase.AdminManager.AddPermissionToClient(client, permission))
+        if (TnmsPlugin.AdminManager.AddPermissionToClient(client, permission))
         {
             client.PrintToChat($"Added permission '{permission}' to client.");
         }

@@ -15,7 +15,7 @@ public static class PlayerUtil
 
     private static IGameEvent? GetNextLevelChangedEvent()
     {
-        return _nextLevelChangedEvent ??= TnmsPluginBase.StaticSharedSystem.GetEventManager().CreateEvent("nextlevel_changed", true);
+        return _nextLevelChangedEvent ??= TnmsPlugin.StaticSharedSystem.GetEventManager().CreateEvent("nextlevel_changed", true);
     }
     
     /// <summary>
@@ -150,7 +150,7 @@ public static class PlayerUtil
         if (playerController == null)
             return;
         
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().InvokeAction(() =>
+        TnmsPlugin.StaticSharedSystem.GetModSharp().InvokeAction(() =>
         {
             playerController.SwitchTeam(playerTeam);
         });
@@ -274,7 +274,7 @@ public static class PlayerUtil
         if (playerPawn == null)
             return;
 
-        float currentTime = TnmsPluginBase.StaticSharedSystem.GetModSharp().GetGlobals().CurTime;
+        float currentTime = TnmsPlugin.StaticSharedSystem.GetModSharp().GetGlobals().CurTime;
 
 
         // TODO() Maybe need this?

@@ -15,7 +15,7 @@ public static class EntityUtil
     /// <returns>Returns CCSGameRules instance if found. Otherwise null</returns>
     public static IGameRules GetGameRules()
     {
-        return TnmsPluginBase.StaticSharedSystem.GetModSharp().GetGameRules();
+        return TnmsPlugin.StaticSharedSystem.GetModSharp().GetGameRules();
     }
 
     /// <summary>
@@ -25,6 +25,6 @@ public static class EntityUtil
     /// <returns>Returns CCSTeam instance if found. Otherwise null</returns>
     public static ITeamManager? GetTeam(CStrikeTeam csTeam)
     {
-        return TnmsPluginBase.StaticSharedSystem.GetEntityManager().GetGlobalCStrikeTeam(csTeam);
+        return TnmsPlugin.StaticSharedSystem.GetEntityManager().GetGlobalCStrikeTeam(csTeam);
     }
 }

@@ -14,7 +14,7 @@ public static class GameClientExtension
     /// <param name="message">message</param>
     public static void PrintToChat(this IGameClient client, string message)
     {
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Chat, message, new RecipientFilter(client));
+        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Chat, message, new RecipientFilter(client));
     }
 
     /// <summary>
@@ -24,7 +24,7 @@ public static class GameClientExtension
     /// <param name="message">message</param>
     public static void PrintToSayText2(this IGameClient client, string message)
     {
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.SayText2, message, new RecipientFilter(client));
+        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.SayText2, message, new RecipientFilter(client));
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class GameClientExtension
     /// <param name="message">message</param>
     public static void PrintToCenter(this IGameClient client, string message)
     {
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Center, message, new RecipientFilter(client));
+        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Center, message, new RecipientFilter(client));
     }
     
     /// <summary>
@@ -44,7 +44,7 @@ public static class GameClientExtension
     /// <param name="message">message</param>
     public static void PrintToHint(this IGameClient client, string message)
     {
-        TnmsPluginBase.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Hint, message, new RecipientFilter(client));
+        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Hint, message, new RecipientFilter(client));
     }
     
     /// <summary>
@@ -54,7 +54,7 @@ public static class GameClientExtension
     /// <returns></returns>
     public static IPlayerController? GetPlayerController(this IGameClient client)
     {
-        return TnmsPluginBase.StaticSharedSystem.GetEntityManager().FindPlayerControllerBySlot(client.Slot);
+        return TnmsPlugin.StaticSharedSystem.GetEntityManager().FindPlayerControllerBySlot(client.Slot);
     }
 
     /// <summary>
@@ -64,6 +64,6 @@ public static class GameClientExtension
     /// <returns></returns>
     public static IPlayerPawn? GetPlayerPawn(this IGameClient client)
     {
-        return TnmsPluginBase.StaticSharedSystem.GetEntityManager().FindPlayerPawnBySlot(client.Slot);
+        return TnmsPlugin.StaticSharedSystem.GetEntityManager().FindPlayerPawnBySlot(client.Slot);
     }
 }

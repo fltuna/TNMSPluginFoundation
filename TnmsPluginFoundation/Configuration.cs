@@ -6,8 +6,8 @@ namespace TnmsPluginFoundation;
 /// <summary>
 /// Manages plugin ConVar configuration file and execution.
 /// </summary>
-/// <param name="plugin">Instance of <see cref="TnmsPluginBase"/></param>
-public class ConVarConfigurationService(TnmsPluginBase plugin)
+/// <param name="plugin">Instance of <see cref="TnmsPlugin"/></param>
+public class ConVarConfigurationService(TnmsPlugin plugin)
 {
     private readonly Dictionary<string, List<object>> _moduleConVars = new();
     
@@ -80,7 +80,7 @@ public class ConVarConfigurationService(TnmsPluginBase plugin)
         {
             plugin.Logger.LogInformation("Executing plugin ConVar config files...");
             string configPath = GetSubPathAfterPattern(plugin.ConVarConfigPath, "game/csgo/cfg");
-            TnmsPluginBase.StaticSharedSystem.GetModSharp().ServerCommand($"exec {configPath}");
+            TnmsPlugin.StaticSharedSystem.GetModSharp().ServerCommand($"exec {configPath}");
         }
         else
         {

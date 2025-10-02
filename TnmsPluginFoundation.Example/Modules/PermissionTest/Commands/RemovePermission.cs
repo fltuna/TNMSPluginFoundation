@@ -28,7 +28,7 @@ public class RemovePermission(IServiceProvider provider) : TnmsAbstractCommandBa
             return;
         var permission = commandInfo.GetArg(1);
 
-        if (TnmsPluginBase.AdminManager.RemovePermissionFromClient(client, permission))
+        if (TnmsPlugin.AdminManager.RemovePermissionFromClient(client, permission))
         {
             client.PrintToChat($"Removed permission '{permission}' from client.");
         }

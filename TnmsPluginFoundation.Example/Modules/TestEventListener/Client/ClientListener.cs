@@ -8,7 +8,7 @@ namespace TnmsPluginFoundation.Example.Modules.TestEventListener.Client;
 
 public class ClientListener(IServiceProvider provider): IClientListener
 {
-    private TnmsPluginBase _plugin = provider.GetRequiredService<TnmsPluginBase>();
+    private TnmsPlugin _plugin = provider.GetRequiredService<TnmsPlugin>();
     
     public int ListenerVersion => 1;
     public int ListenerPriority => 0;

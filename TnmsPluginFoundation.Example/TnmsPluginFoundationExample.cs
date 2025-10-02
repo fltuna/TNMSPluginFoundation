@@ -15,7 +15,7 @@ public class TnmsPluginFoundationExample(
     Version? version,
     IConfiguration coreConfiguration,
     bool hotReload)
-    : TnmsPluginBase(sharedSystem, dllPath, sharpPath, version, coreConfiguration, hotReload)
+    : TnmsPlugin(sharedSystem, dllPath, sharpPath, version, coreConfiguration, hotReload)
 {
     public override string DisplayName => "TnmsPluginFoundation.Example";
     public override string DisplayAuthor => "faketuna";

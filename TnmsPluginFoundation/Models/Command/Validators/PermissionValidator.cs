@@ -29,7 +29,7 @@ public sealed class PermissionValidator(string requiredPermission, bool dontNoti
     /// <returns>TnmsCommandValidationResult</returns>
     public override TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
     {
-        if (TnmsPluginBase.AdminManager.ClientHasPermission(player, requiredPermission))
+        if (TnmsPlugin.AdminManager.ClientHasPermission(player, requiredPermission))
             return TnmsCommandValidationResult.Success;
         
         if (dontNotifyWhenFailed)
