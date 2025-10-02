@@ -31,7 +31,10 @@ public abstract class TnmsPlugin: IModSharpModule
         _hotReload = hotReload;
 
         var   factory = _sharedSystem.GetLoggerFactory();
-        var   logger  = factory.CreateLogger<TnmsPlugin>();
+
+        // ReSharper disable VirtualMemberCallInConstructor
+        var   logger  = factory.CreateLogger(DisplayName);
+        // ReSharper restore VirtualMemberCallInConstructor
 
         Logger = logger;
         GameData = _sharedSystem.GetModSharp().GetGameData();
