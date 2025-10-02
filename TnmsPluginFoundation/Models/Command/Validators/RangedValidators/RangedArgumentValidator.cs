@@ -97,7 +97,7 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
         _lastParsedValue = null;
         _isUsingDefaultValue = false;
 
-        if (commandInfo.ArgCount <= _argumentIndex)
+        if (commandInfo.ArgCount < _argumentIndex)
         {
             // If optional and argument not provided, use default value
             if (_isOptional && _defaultValue.HasValue)

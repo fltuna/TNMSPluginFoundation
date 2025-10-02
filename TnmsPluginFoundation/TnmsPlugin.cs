@@ -6,6 +6,7 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform;
+using TnmsExtendableTargeting.Shared;
 using TnmsPluginFoundation.Interfaces;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Logger;
@@ -45,8 +46,10 @@ public abstract class TnmsPlugin: IModSharpModule
     /// <summary>
     /// ModSharp Shared system / Shared Modules
     /// </summary>
-    public static ISharedSystem StaticSharedSystem => _sharedSystem;
+    internal static ISharedSystem StaticSharedSystem => _sharedSystem;
 
+    public static IExtendableTargeting ExtendableTargeting => _extendableTargeting;
+    private static IExtendableTargeting _extendableTargeting = null!;
 
     public static IAdminManager AdminManager => _adminManager;
     private static IAdminManager _adminManager = null!;
@@ -211,8 +214,11 @@ public abstract class TnmsPlugin: IModSharpModule
         ConVarConfigurationService.ExecuteConfigs();
 
         var adminSystem = _sharedSystem.GetSharpModuleManager().GetRequiredSharpModuleInterface<IAdminManager>(IAdminManager.ModSharpModuleIdentity).Instance;
-
         _adminManager = adminSystem ?? throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
+
+        var extendableTargeting = _sharedSystem.GetSharpModuleManager()
+            .GetRequiredSharpModuleInterface<IExtendableTargeting>(IExtendableTargeting.ModSharpModuleIdentity).Instance;
+        _extendableTargeting = extendableTargeting ?? throw new InvalidOperationException("TnmsExtendableTargeting is not found! Make sure TnmsExtendableTargeting is installed!");
     }
 
     /// <summary>

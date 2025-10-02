@@ -5,10 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="9.0.0" />
+        <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
     </ItemGroup>
 
     <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
@@ -16,6 +15,5 @@
         <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb" DestinationFolder="$(MOD_SHARP_DIR)\shared\$(ProjectName)" />
         <Message Text="Successfully copied the plugin files" Importance="High" />
     </Target>
-
 
 </Project>

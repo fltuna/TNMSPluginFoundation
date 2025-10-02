@@ -9,6 +9,11 @@ TnmsAdministrationPlatform/obj/*
 TnmsAdministrationPlatform.Shared/bin/*
 TnmsAdministrationPlatform.Shared/obj/*
 
+TnmsExtendableTargeting/bin/*
+TnmsExtendableTargeting/obj/*
+TnmsExtendableTargeting.Shared/bin/*
+TnmsExtendableTargeting.Shared/obj/*
+
 TnmsLocalizationPlatform/bin/*
 TnmsLocalizationPlatform/obj/*
 TnmsLocalizationPlatform.Shared/bin/*
