@@ -22,18 +22,18 @@ public class VariablePermissionCheck(IServiceProvider provider) : TnmsAbstractCo
         return base.OnValidationFailed(context);
     }
 
-    protected override void ExecuteCommand(IGameClient? player, StringCommand commandInfo, ValidatedArguments? validatedArguments)
+    protected override void ExecuteCommand(IGameClient? client, StringCommand commandInfo, ValidatedArguments? validatedArguments)
     {
-        if (player == null)
+        if (client == null)
             return;
         
-        if (TnmsPlugin.AdminManager.ClientHasPermission(player, commandInfo.GetArg(1)))
+        if (TnmsPlugin.AdminManager.ClientHasPermission(client, commandInfo.GetArg(1)))
         {
-            player.PrintToChat($"You have permission: {commandInfo.GetArg(1)}");
+            client.GetPlayerController()!.PrintToChat($"You have permission: {commandInfo.GetArg(1)}");
         }
         else
         {
-            player.PrintToChat($"You don't have permission: {commandInfo.GetArg(1)}");
+            client.GetPlayerController()!.PrintToChat($"You don't have permission: {commandInfo.GetArg(1)}");
         }
     }
 }

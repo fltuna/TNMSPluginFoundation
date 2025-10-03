@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Sharp.Shared.Enums;
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 using TnmsPluginFoundation.Extensions.Client;
 using TnmsPluginFoundation.Interfaces;
@@ -33,25 +35,6 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
     /// ConVarConfigurationService
     /// </summary>
     private ConVarConfigurationService ConVarConfigurationService => Plugin.ConVarConfigurationService;
-    
-    
-    
-
-    // public FakeConVar<float> ConVarVariableName = new(
-    //     "convar_name",
-    //     "Description",
-    //     DefaultValue,
-    //     ConVarFlags.FCVAR_NONE,
-    //     new RangeValidator<float>(0.0F, float.MaxValue));
-    //
-    // You can register ConVar in Module like above.
-    //
-    // If you want to add this ConVar to ConVar config file automatic generation
-    // You need to call TrackConVar() method in OnInitialize()
-    //
-    //
-    
-    
     
     /// <summary>
     /// This method will call while registering module, and module registration is called in plugins Load method.
@@ -140,6 +123,25 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
         ConVarConfigurationService.TrackConVar(PluginModuleName ,conVar);
     }
 
+    /// <summary>
+    /// Create and track convar automatically
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="defaultValue"></param>
+    /// <param name="helpString"></param>
+    /// <param name="cvarFlags"></param>
+    /// <returns>returns null if failed to create, otherwise its instance of ConVar</returns>
+    protected IConVar? CreateAndTrackConVar(string name, string defaultValue, string? helpString = null, ConVarFlags? cvarFlags = null)
+    {
+        var newCvar = SharedSystem.GetConVarManager().CreateConVar(name, defaultValue, helpString, cvarFlags);
+        if (newCvar != null)
+        {
+            TrackConVar(newCvar);
+        }
+        
+        return newCvar;
+    }
+
 
     /// <summary>
     /// Removes all module ConVar from tracking list.
@@ -162,8 +164,13 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
         {
             if (client.IsFakeClient || client.IsHltv)
                 continue;
+
+            var playerController = client.GetPlayerController();
             
-            client.PrintToChat(GetTextWithModulePrefix(client, LocalizeString(client, localizationKey, args)));
+            if (playerController == null)
+                continue;
+            
+            playerController.PrintToChat(GetTextWithModulePrefix(client, LocalizeString(client, localizationKey, args)));
         }
     }
     

@@ -30,11 +30,11 @@ public class RemovePermission(IServiceProvider provider) : TnmsAbstractCommandBa
 
         if (TnmsPlugin.AdminManager.RemovePermissionFromClient(client, permission))
         {
-            client.PrintToChat($"Removed permission '{permission}' from client.");
+            client.GetPlayerController()!.PrintToChat($"Removed permission '{permission}' from client.");
         }
         else
         {
-            client.PrintToChat($"Failed to remove permission '{permission}' from client.");
+            client.GetPlayerController()!.PrintToChat($"Failed to remove permission '{permission}' from client.");
         }
     }
 }

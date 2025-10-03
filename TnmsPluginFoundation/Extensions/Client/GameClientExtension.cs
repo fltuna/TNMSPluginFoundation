@@ -8,46 +8,6 @@ namespace TnmsPluginFoundation.Extensions.Client;
 public static class GameClientExtension
 {
     /// <summary>
-    /// print chat to client
-    /// </summary>
-    /// <param name="client">Client to print</param>
-    /// <param name="message">message</param>
-    public static void PrintToChat(this IGameClient client, string message)
-    {
-        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Chat, message, new RecipientFilter(client));
-    }
-
-    /// <summary>
-    /// I'm not sure what say text2 is
-    /// </summary>
-    /// <param name="client">Client to print</param>
-    /// <param name="message">message</param>
-    public static void PrintToSayText2(this IGameClient client, string message)
-    {
-        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.SayText2, message, new RecipientFilter(client));
-    }
-
-    /// <summary>
-    /// print center message to client (maybe HTML?)
-    /// </summary>
-    /// <param name="client">Client to print</param>
-    /// <param name="message">message</param>
-    public static void PrintToCenter(this IGameClient client, string message)
-    {
-        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Center, message, new RecipientFilter(client));
-    }
-    
-    /// <summary>
-    /// print hint message to client
-    /// </summary>
-    /// <param name="client">Client to print</param>
-    /// <param name="message">message</param>
-    public static void PrintToHint(this IGameClient client, string message)
-    {
-        TnmsPlugin.StaticSharedSystem.GetModSharp().PrintChannelFilter(HudPrintChannel.Hint, message, new RecipientFilter(client));
-    }
-    
-    /// <summary>
     /// Get PlayerController from IGameClient
     /// </summary>
     /// <param name="client"></param>

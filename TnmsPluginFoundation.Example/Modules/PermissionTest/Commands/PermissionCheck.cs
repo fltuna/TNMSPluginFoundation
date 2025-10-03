@@ -21,13 +21,13 @@ public class PermissionCheck(IServiceProvider provider) : TnmsAbstractCommandBas
     protected override ValidationFailureResult OnValidationFailed(ValidationFailureContext context)
     {
         Logger.LogInformation("Validation failed by {validator}", context.Validator.ValidatorName);
-        context.Client!.PrintToChat("Failed to validate command cuz you don't have permission.");
+        context.Client!.GetPlayerController()!.PrintToChat("Failed to validate command cuz you don't have permission.");
         return base.OnValidationFailed(context);
     }
 
     protected override void ExecuteCommand(IGameClient? player, StringCommand commandInfo, ValidatedArguments? validatedArguments)
     {
         Plugin.Logger.LogInformation("User has {permission}", PermissionNode);
-        player!.PrintToChat("Validated cuz you have permission.");
+        player!.GetPlayerController()!.PrintToChat("Validated cuz you have permission.");
     }
 }

@@ -37,9 +37,17 @@ public class PluginTranslatableFeatureBase(IServiceProvider serviceProvider) : P
     protected void PrintMessageToServerOrPlayerChat(IGameClient? player, string message)
     {
         if (player == null)
+        {
+            Plugin.SharedSystem.GetModSharp().LogMessage(message);
+            return;
+        }
+
+        var playerController = player.GetPlayerController();
+        
+        if (playerController == null)
             Plugin.SharedSystem.GetModSharp().LogMessage(message);
         else
-            player.PrintToChat(message);
+            playerController.PrintToChat(message);
     }
     
     /// <summary>

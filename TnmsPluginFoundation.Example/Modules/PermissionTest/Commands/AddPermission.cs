@@ -26,16 +26,16 @@ public class AddPermission(IServiceProvider provider) : TnmsAbstractCommandBase(
     {
         if (client == null)
             return;
-
+        
         var permission = commandInfo.GetArg(1);
 
         if (TnmsPlugin.AdminManager.AddPermissionToClient(client, permission))
         {
-            client.PrintToChat($"Added permission '{permission}' to client.");
+            client.GetPlayerController()!.PrintToChat($"Added permission '{permission}' to client.");
         }
         else
         {
-            client.PrintToChat($"Failed to add permission '{permission}' to client.");
+            client.GetPlayerController()!.PrintToChat($"Failed to add permission '{permission}' to client.");
         }
     }
 }
