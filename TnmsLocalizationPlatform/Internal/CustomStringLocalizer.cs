@@ -68,6 +68,14 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
         }
     }
 
+    public CultureInfo GetClientCulture(IGameClient client)
+    {
+        if (TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
+            return culture;
+
+        return TnmsLocalizationPlatform.Instance.ServerDefaultCulture;
+    }
+
     public LocalizedString ForClient(IGameClient client, string name, params object[] arguments)
     {
         LocalizedString format;
