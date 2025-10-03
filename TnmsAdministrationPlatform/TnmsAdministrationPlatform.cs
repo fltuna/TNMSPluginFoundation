@@ -30,6 +30,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     }
     
     private readonly Dictionary<ulong, IAdminUser> _userPermissions = new();
+    private readonly Dictionary<string, IAdminGroup> _groupPermissions = new();
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 20;
@@ -81,13 +82,18 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         if (!_userPermissions.TryGetValue(client.SteamId.AccountId, out var adminUser))
             return false;
         
-        if (adminUser.Permissions.Contains(IAdminManager.RootPermissionWildCard))
+        return VerifyPermission(adminUser, permission);
+    }
+
+    private bool VerifyPermission(IAdminUser user, string permission)
+    {
+        if (user.Permissions.Contains(IAdminManager.RootPermissionWildCard))
             return true;
         
-        if (adminUser.Permissions.Contains(permission))
+        if (user.Permissions.Contains(permission))
             return true;
         
-        foreach (var userPerm in adminUser.Permissions)
+        foreach (var userPerm in user.Permissions)
         {
             if (!userPerm.EndsWith(".*"))
                 continue;
@@ -95,6 +101,25 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
             var prefix = userPerm.Substring(0, userPerm.Length - 1);
             if (permission.StartsWith(prefix))
                 return true;
+        }
+
+        foreach (var group in user.Groups)
+        {
+            if (group.Permissions.Contains(IAdminManager.RootPermissionWildCard))
+                return true;
+        
+            if (group.Permissions.Contains(permission))
+                return true;
+            
+            foreach (var groupPerm in group.Permissions)
+            {
+                if (!groupPerm.EndsWith(".*"))
+                    continue;
+                
+                var prefix = groupPerm.Substring(0, groupPerm.Length - 1);
+                if (permission.StartsWith(prefix))
+                    return true;
+            }
         }
         
         return false;
@@ -112,12 +137,18 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     public bool AddClientToGroup(IGameClient client, string groupName)
     {
-        return _userPermissions[client.SteamId.AccountId].Groups.Add(groupName);
+        if (!_groupPermissions.TryGetValue(groupName, out var group))
+            return false;
+        
+        return _userPermissions[client.SteamId.AccountId].Groups.Add(group);
     }
 
     public bool RemoveClientFromGroup(IGameClient client, string groupName)
     {
-        return _userPermissions[client.SteamId.AccountId].Groups.Remove(groupName);
+        if (!_groupPermissions.TryGetValue(groupName, out var group))
+            return false;
+        
+        return _userPermissions[client.SteamId.AccountId].Groups.Remove(group);
     }
 
     public IAdminUser GetAdminInformation(IGameClient client)

@@ -6,6 +6,6 @@ public interface IAdminUser
 {
     public IGameClient Client { get; }
     public HashSet<string> Permissions { get; }
-    public HashSet<string> Groups { get; }
+    public HashSet<IAdminGroup> Groups { get; }
     public byte Immunity { get; set; }
 }
