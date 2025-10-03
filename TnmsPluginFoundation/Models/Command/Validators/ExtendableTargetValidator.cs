@@ -1,6 +1,5 @@
 ﻿using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
-using TnmsPluginFoundation.Extensions.Targeting;
 
 namespace TnmsPluginFoundation.Models.Command.Validators;
 
