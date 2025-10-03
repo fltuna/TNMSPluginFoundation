@@ -19,6 +19,13 @@ TnmsLocalizationPlatform/obj/*
 TnmsLocalizationPlatform.Shared/bin/*
 TnmsLocalizationPlatform.Shared/Obj/*
 
+A0TnmsDependencyLoader/bin/*
+A0TnmsDependencyLoader/obj/*
+
+TnmsCentralizedDbPlatform/bin/*
+TnmsCentralizedDbPlatform/obj/*
+TnmsCentralizedDbPlatform.Shared/bin/*
+TnmsCentralizedDbPlatform.Shared/obj/*
 
 .idea
 Folder.DotSettings.user

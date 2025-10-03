@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    </ItemGroup>
+
+    <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
+        <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
+        <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb" DestinationFolder="$(MOD_SHARP_DIR)\shared\$(ProjectName)" />
+        <Message Text="Successfully copied the plugin files" Importance="High" />
+    </Target>
+
+</Project>

@@ -1,30 +1,38 @@
 ﻿using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
+using TnmsLocalizationPlatform.Data;
 using TnmsLocalizationPlatform.Internal;
+using TnmsLocalizationPlatform.Services;
 using TnmsLocalizationPlatform.Shared;
+using TnmsCentralizedDbPlatform.Shared;
 
 namespace TnmsLocalizationPlatform;
 
-public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatform, IClientListener
+public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatform, IClientListener
 {
     internal readonly ILogger Logger;
     internal readonly ISharedSystem SharedSystem;
-    
+
+    private ITnmsCentralizedDbPlatform? _dbPlatform;
+    private LocalizationDbContext? _dbContext;
+    private UserLanguageService _userLanguageService = null!;
+
     public TnmsLocalizationPlatform(ISharedSystem sharedSystem,
-        string?                  dllPath,
-        string?                  sharpPath,
-        Version?                 version,
-        IConfiguration?          coreConfiguration,
-        bool                     hotReload)
+        string? dllPath,
+        string? sharpPath,
+        Version? version,
+        IConfiguration? coreConfiguration,
+        bool hotReload)
     {
         SharedSystem = sharedSystem;
         Logger = sharedSystem.GetLoggerFactory().CreateLogger<TnmsLocalizationPlatform>();
-        
+
         ArgumentNullException.ThrowIfNull(dllPath);
         ArgumentNullException.ThrowIfNull(sharpPath);
         ArgumentNullException.ThrowIfNull(version);
@@ -36,31 +44,133 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 10;
-    
+
     public string DisplayName => "TnmsLocalizationPlatform";
     public string DisplayAuthor => "faketuna";
-    
+
     internal static TnmsLocalizationPlatform Instance { get; private set; } = null!;
+
     internal readonly Dictionary<byte, CultureInfo> ClientCultures = new();
+
     // TODO() Get ServerDefault culture from config
-    internal CultureInfo ServerDefaultCulture { get; set; }  = new CultureInfo("en-US");
-    
+    internal CultureInfo ServerDefaultCulture { get; set; } = new CultureInfo("en-US");
+
     public bool Init()
     {
         Instance = this;
-        Logger.LogInformation("TnmsLocalizationPlatform initialized");
         
+        if (!InitializeDatabase())
+        {
+            Logger.LogError("Failed to initialize database. TnmsLocalizationPlatform initialization failed.");
+            return false;
+        }
+
+        Logger.LogInformation("TnmsLocalizationPlatform initialized");
         return true;
     }
 
     public void PostInit()
     {
-        SharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this, ITnmsLocalizationPlatform.ModSharpModuleIdentity, (ITnmsLocalizationPlatform)this);
+        SharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this,
+            ITnmsLocalizationPlatform.ModSharpModuleIdentity, (ITnmsLocalizationPlatform)this);
+        SharedSystem.GetClientManager().InstallClientListener(this);
     }
 
     public void Shutdown()
     {
+        _dbContext?.Dispose();
+        SharedSystem.GetClientManager().RemoveClientListener(this);
         Logger.LogInformation("TnmsLocalizationPlatform shutdown");
+    }
+
+    private bool InitializeDatabase()
+    {
+        try
+        {
+            _dbPlatform = SharedSystem.GetSharpModuleManager()
+                .GetRequiredSharpModuleInterface<ITnmsCentralizedDbPlatform>(
+                    ITnmsCentralizedDbPlatform.ModSharpModuleIdentity).Instance;
+
+            if (_dbPlatform == null)
+            {
+                Logger.LogWarning("TnmsCentralizedDbPlatform not found. Database features will be disabled.");
+                return false;
+            }
+
+            var dbParams = new DbConnectionParameters
+            {
+                ProviderType = TnmsDatabaseProviderType.Sqlite,
+                Host = "localization.db"
+            };
+
+            var options = _dbPlatform.ConfigureDbContext<LocalizationDbContext>(dbParams, "TnmsLocalizationPlatform");
+            _dbContext = new LocalizationDbContext(options.Options);
+            
+            if (!ApplyDatabaseMigrations())
+            {
+                Logger.LogError("Failed to apply database migrations");
+                return false;
+            }
+
+            var repository = _dbPlatform.CreateRepository<Models.UserLanguage>(_dbContext);
+            _userLanguageService = new UserLanguageService(_dbContext, repository);
+
+            Logger.LogInformation("Database initialized successfully");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initialize database");
+            return false;
+        }
+    }
+
+    private bool ApplyDatabaseMigrations()
+    {
+        try
+        {
+            if (_dbContext == null)
+            {
+                Logger.LogError("DbContext is null");
+                return false;
+            }
+
+            var pendingMigrations = _dbContext.Database.GetPendingMigrations().ToList();
+            
+            if (pendingMigrations.Any())
+            {
+                Logger.LogInformation("Found {Count} pending migration(s): {Migrations}", 
+                    pendingMigrations.Count, string.Join(", ", pendingMigrations));
+
+                if (IsAutoMigrationEnabled())
+                {
+                    Logger.LogInformation("Auto-applying database migrations...");
+                    _dbContext.Database.Migrate();
+                    Logger.LogInformation("Database migrations applied successfully");
+                }
+                else
+                {
+                    Logger.LogWarning("Pending migrations detected but auto-migration is disabled.");
+                    Logger.LogWarning("Please run 'dotnet ef database update' manually to apply migrations.");
+                }
+            }
+            else
+            {
+                Logger.LogInformation("Database is up to date, no pending migrations");
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error during migration process");
+            return false;
+        }
+    }
+
+    private bool IsAutoMigrationEnabled()
+    {
+        return true;
     }
 
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
@@ -72,12 +182,86 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
 
     public void OnClientConnected(IGameClient client)
     {
-        SharedSystem.GetClientManager().QueryConVar(client, "cl_language", (gameClient, status, name, value) =>
+        Task.Run(async () =>
         {
-            if (status != QueryConVarValueStatus.ValueIntact)
-                throw new InvalidOperationException("Failed to get client language");
-            
-            ClientCultures[gameClient.Slot] = CultureInfo.GetCultureInfo(value);
+            try
+            {
+                var savedLanguage = await _userLanguageService.GetUserLanguageCodeAsync(client.SteamId.AccountId);
+                if (!string.IsNullOrEmpty(savedLanguage))
+                {
+                    // データベースに言語情報が存在する場合は、それを使用
+                    var culture = CultureInfo.GetCultureInfo(savedLanguage);
+                    ClientCultures[client.Slot] = culture;
+                    Logger.LogDebug("Loaded saved language {Language} for player {SteamId}", savedLanguage,
+                        client.SteamId.AccountId);
+                }
+                else
+                {
+                    SharedSystem.GetClientManager().QueryConVar(client, "cl_language",
+                        async (gameClient, status, name, value) =>
+                        {
+                            if (status != QueryConVarValueStatus.ValueIntact)
+                            {
+                                Logger.LogWarning("Failed to get client language for {SteamId}",
+                                    gameClient.SteamId.AccountId);
+                                return;
+                            }
+
+                            try
+                            {
+                                var culture = CultureInfo.GetCultureInfo(value);
+                                ClientCultures[gameClient.Slot] = culture;
+
+                                await Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await _userLanguageService.SaveUserLanguageAsync(
+                                            gameClient.SteamId.AccountId, value);
+                                        Logger.LogDebug("Saved language {Language} for player {SteamId}", value,
+                                            gameClient.SteamId.AccountId);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.LogError(ex, "Error saving language to database for {SteamId}",
+                                            gameClient.SteamId.AccountId);
+                                    }
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError(ex, "Error processing client language for {SteamId}",
+                                    gameClient.SteamId.AccountId);
+                                ClientCultures[gameClient.Slot] = ServerDefaultCulture;
+                            }
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error loading saved language for {SteamId}", client.SteamId.AccountId);
+
+                SharedSystem.GetClientManager().QueryConVar(client, "cl_language", (gameClient, status, name, value) =>
+                {
+                    if (status != QueryConVarValueStatus.ValueIntact)
+                    {
+                        Logger.LogWarning("Failed to get client language for {SteamId}", gameClient.SteamId.AccountId);
+                        return;
+                    }
+
+                    try
+                    {
+                        var culture = CultureInfo.GetCultureInfo(value);
+                        ClientCultures[gameClient.Slot] = culture;
+                    }
+                    catch (Exception cultureEx)
+                    {
+                        Logger.LogError(cultureEx, "Error processing client language for {SteamId}",
+                            gameClient.SteamId.AccountId);
+                        ClientCultures[gameClient.Slot] = ServerDefaultCulture;
+                    }
+                });
+            }
         });
     }
 
@@ -85,6 +269,4 @@ public class TnmsLocalizationPlatform: IModSharpModule, ITnmsLocalizationPlatfor
     {
         ClientCultures.Remove(client.Slot);
     }
-    
-    
 }
