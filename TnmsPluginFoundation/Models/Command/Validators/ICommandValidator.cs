@@ -21,10 +21,10 @@ public interface ICommandValidator
     /// <summary>
     /// Validates player command input
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo);
+    TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo);
 
     /// <summary>
     /// Validates player command input and returns validated arguments

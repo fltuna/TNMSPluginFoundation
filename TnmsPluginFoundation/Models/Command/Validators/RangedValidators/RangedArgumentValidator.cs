@@ -74,12 +74,12 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// <summary>
     /// Validates command input for ICommandValidator interface
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public override TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
+    public override TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo)
     {
-        var rangedResult = ValidateRange(player, commandInfo);
+        var rangedResult = ValidateRange(client, commandInfo);
         
         return rangedResult == TnmsRangedCommandValidationResult.Success 
             ? TnmsCommandValidationResult.Success

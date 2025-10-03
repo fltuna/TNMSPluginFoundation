@@ -21,10 +21,10 @@ public abstract class CommandValidatorBase : ICommandValidator
     /// <summary>
     /// Validates player command input
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public abstract TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo);
+    public abstract TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo);
 
     /// <summary>
     /// Validates player command input and returns validated arguments

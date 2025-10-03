@@ -5,6 +5,7 @@ namespace TnmsAdministrationPlatform;
 public interface IAdminManager
 {
     public const string RootPermissionWildCard = "*";
+    public const string AdminPermissionNode = "tnms.admin";
     public const string ModSharpModuleIdentity = "TnmsAdministrationPlatform";
     
     /// <summary>
@@ -14,6 +15,14 @@ public interface IAdminManager
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
     /// <returns>True if player has permissions</returns>
     public bool ClientHasPermission(IGameClient? client, string permission);
+    
+    /// <summary>
+    /// Check executor can target the client
+    /// </summary>
+    /// <param name="executor"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    public bool ClientCanTarget(IGameClient? executor, IGameClient target);
     
     /// <summary>
     /// Add permission to client

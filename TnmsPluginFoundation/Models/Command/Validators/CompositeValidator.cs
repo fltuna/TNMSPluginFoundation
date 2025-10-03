@@ -48,14 +48,14 @@ public class CompositeValidator : ICommandValidator
     /// <summary>
     /// Validates command input using all registered validators
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
+    public TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo)
     {
         foreach (var validator in _validators)
         {
-            var result = validator.Validate(player, commandInfo);
+            var result = validator.Validate(client, commandInfo);
             if (result != TnmsCommandValidationResult.Success)
             {
                 _lastFailedValidator = validator;

@@ -24,12 +24,12 @@ public sealed class PermissionValidator(string requiredPermission, bool dontNoti
     /// <summary>
     /// Validates player permission
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public override TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
+    public override TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo)
     {
-        if (TnmsPlugin.AdminManager.ClientHasPermission(player, requiredPermission))
+        if (TnmsPlugin.AdminManager.ClientHasPermission(client, requiredPermission))
             return TnmsCommandValidationResult.Success;
         
         if (dontNotifyWhenFailed)

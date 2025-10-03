@@ -19,7 +19,7 @@
 このシステムでは以下のような形でノードを定義し、活用します。
 
 例：
-- `tnms.administrationplatform.admin`
+- `tnms.admin`
 - `tnms.administrationplatform.command.testcommand1`
 - `tnms.administrationplatform.command.testcommand2`
 
@@ -29,6 +29,11 @@
 - `tnms.administrationplatform.*`: AdministrationPlatformに関する全ての権限
 - `tnms.administrationplatform.command.*`: AdministrationPlatformのコマンドに関する全ての権限
 
+
+### 組み込み権限
+
+- `tnms.admin`: AdministrationPlatformにおいて、ターゲティング可能かの有無を確認する際に使用されます。
+  - 持たないユーザーは持っているユーザーをターゲティング出来ません。
 
 ## 使い方
 

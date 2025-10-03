@@ -37,10 +37,10 @@ public class ArgumentCountValidator : CommandValidatorBase
     /// <summary>
     /// Validates argument count
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public override TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
+    public override TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo)
     {
         var argCount = commandInfo.ArgCount;
 

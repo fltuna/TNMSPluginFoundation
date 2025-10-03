@@ -10,7 +10,8 @@ namespace TnmsPluginFoundation.Models.Command.Validators;
 /// </summary>
 /// <param name="argumentIndex">Index of the argument containing the target string (1-based)</param>
 /// <param name="dontNotifyWhenFailed">When true, it will return TnmsCommandValidationResult.FailedIgnoreDefault to avoid print default failure message</param>
-public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFailed = false): CommandValidatorBase
+/// <param name="bypassAdminCheck">When true, it will bypass admin check</param>
+public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFailed = false, bool bypassAdminCheck = false): CommandValidatorBase
 {
     private List<IGameClient>? _lastFoundTargets;
     private string? _lastTargetString;
@@ -27,10 +28,10 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
     /// <summary>
     /// Find players by using ExtendedTargeting. This validator fails when if no players found
     /// </summary>
-    /// <param name="player">CCSPlayerController</param>
+    /// <param name="client">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
     /// <returns>TnmsCommandValidationResult</returns>
-    public override TnmsCommandValidationResult Validate(IGameClient? player, StringCommand commandInfo)
+    public override TnmsCommandValidationResult Validate(IGameClient? client, StringCommand commandInfo)
     {
         _lastFoundTargets = null;
         _lastTargetString = null;
@@ -47,12 +48,24 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
         var targetString = commandInfo.GetArg(argumentIndex);
         _lastTargetString = targetString;
 
-        if (!TnmsPlugin.ExtendableTargeting.ResolveTarget(targetString, player, out var foundTargets))
+        if (!TnmsPlugin.ExtendableTargeting.ResolveTarget(targetString, client, out var foundTargets))
         {
             if (dontNotifyWhenFailed)
                 return TnmsCommandValidationResult.FailedIgnoreDefault;
             
             return TnmsCommandValidationResult.Failed;
+        }
+
+        if (client == null || bypassAdminCheck)
+        {
+            _lastFoundTargets = foundTargets;
+            return TnmsCommandValidationResult.Success;
+        }
+        
+        foreach (var foundTarget in foundTargets.ToList())
+        {
+            if(!TnmsPlugin.AdminManager.ClientCanTarget(client, foundTarget))
+                foundTargets.Remove(foundTarget);
         }
         
         _lastFoundTargets = foundTargets;

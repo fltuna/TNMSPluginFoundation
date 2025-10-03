@@ -85,6 +85,29 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         return VerifyPermission(adminUser, permission);
     }
 
+    public bool ClientCanTarget(IGameClient? executor, IGameClient target)
+    {
+        if (executor == null)
+            return true;
+        
+        var executorInfo = GetAdminInformation(executor);
+        var targetInfo = GetAdminInformation(target);
+        
+        bool executorIsAdmin = VerifyPermission(executorInfo, IAdminManager.AdminPermissionNode);
+        bool executorIsRoot = VerifyPermission(executorInfo, IAdminManager.RootPermissionWildCard);
+        
+        bool targetIsAdmin = VerifyPermission(targetInfo, IAdminManager.AdminPermissionNode);
+        bool targetIsRoot = VerifyPermission(targetInfo, IAdminManager.RootPermissionWildCard);
+
+        if (targetIsAdmin && !executorIsAdmin)
+            return false;
+
+        if (targetIsRoot && !executorIsRoot)
+            return false;
+        
+        return targetInfo.Immunity <= executorInfo.Immunity;
+    }
+
     private bool VerifyPermission(IAdminUser user, string permission)
     {
         if (user.Permissions.Contains(IAdminManager.RootPermissionWildCard))
