@@ -196,54 +196,17 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                     ClientCultures[client.Slot] = culture;
                     Logger.LogDebug("Loaded saved language {Language} for player {SteamId}", savedLanguage,
                         client.SteamId.AccountId);
-                }
-                else
-                {
-                    SharedSystem.GetClientManager().QueryConVar(client, "cl_language",
-                        async (gameClient, status, name, value) =>
-                        {
-                            if (status != QueryConVarValueStatus.ValueIntact)
-                            {
-                                Logger.LogWarning("Failed to get client language for {SteamId}",
-                                    gameClient.SteamId.AccountId);
-                                return;
-                            }
-
-                            try
-                            {
-                                var culture = CultureInfo.GetCultureInfo(_cs2ClientLanguageMapping[value]);
-                                ClientCultures[gameClient.Slot] = culture;
-
-                                await Task.Run(async () =>
-                                {
-                                    try
-                                    {
-                                        await _userLanguageService.SaveUserLanguageAsync(
-                                            gameClient.SteamId.AccountId, culture.TwoLetterISOLanguageName);
-                                        Logger.LogWarning("Saved language {Language} for player {SteamId}", culture.TwoLetterISOLanguageName,
-                                            gameClient.SteamId.AccountId);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Logger.LogError(ex, "Error saving language to database for {SteamId}",
-                                            gameClient.SteamId.AccountId);
-                                    }
-                                });
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.LogError(ex, "Error processing client language for {SteamId}",
-                                    gameClient.SteamId.AccountId);
-                                ClientCultures[gameClient.Slot] = ServerDefaultCulture;
-                            }
-                        });
+                    return;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error loading saved language for {SteamId}", client.SteamId.AccountId);
-
-                SharedSystem.GetClientManager().QueryConVar(client, "cl_language", (gameClient, status, name, value) =>
+            }
+            
+            
+            SharedSystem.GetClientManager().QueryConVar(client, "cl_language",
+                async (gameClient, status, name, value) =>
                 {
                     if (status != QueryConVarValueStatus.ValueIntact)
                     {
@@ -253,23 +216,51 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
                     try
                     {
-                        var culture = CultureInfo.GetCultureInfo(value);
+                        var culture = ParseClientLanguageToCulture(gameClient, value);
                         ClientCultures[gameClient.Slot] = culture;
+
+                        await Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _userLanguageService.SaveUserLanguageAsync(
+                                    gameClient.SteamId.AccountId, culture.TwoLetterISOLanguageName);
+                                Logger.LogDebug("Saved language {Language} for player {SteamId}", culture.TwoLetterISOLanguageName,
+                                    gameClient.SteamId.AccountId);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError(ex, "Error saving language to database for {SteamId}", gameClient.SteamId.AccountId);
+                            }
+                        });
                     }
-                    catch (Exception cultureEx)
+                    catch (Exception ex)
                     {
-                        Logger.LogError(cultureEx, "Error processing client language for {SteamId}. using default culture",
-                            gameClient.SteamId.AccountId);
-                        ClientCultures[gameClient.Slot] = ServerDefaultCulture;
+                        Logger.LogError(ex, "Error processing client language for {SteamId}. using default culture", client.SteamId.AccountId);
                     }
                 });
-            }
         });
     }
 
     public void OnClientDisconnected(IGameClient client, NetworkDisconnectionReason reason)
     {
         ClientCultures.Remove(client.Slot);
+    }
+    
+    
+    private CultureInfo ParseClientLanguageToCulture(IGameClient client, string language)
+    {
+        return CultureInfo.GetCultureInfo(GetLanguageCodeFromClientLanguage(language));
+    }
+    
+    private string GetLanguageCodeFromClientLanguage(string clientLanguage)
+    {
+        if (_cs2ClientLanguageMapping.TryGetValue(clientLanguage, out var langCode))
+        {
+            return langCode;
+        }
+
+        return ServerDefaultCulture.TwoLetterISOLanguageName;
     }
     
     // TODO() Add more language mapping
