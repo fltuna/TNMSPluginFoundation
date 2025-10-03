@@ -182,6 +182,9 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
     public void OnClientConnected(IGameClient client)
     {
+        // Default to server culture for fallback until we load the actual culture
+        ClientCultures[client.Slot] = ServerDefaultCulture;
+        
         Task.Run(async () =>
         {
             try
@@ -189,7 +192,6 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                 var savedLanguage = await _userLanguageService.GetUserLanguageCodeAsync(client.SteamId.AccountId);
                 if (!string.IsNullOrEmpty(savedLanguage))
                 {
-                    // データベースに言語情報が存在する場合は、それを使用
                     var culture = CultureInfo.GetCultureInfo(savedLanguage);
                     ClientCultures[client.Slot] = culture;
                     Logger.LogDebug("Loaded saved language {Language} for player {SteamId}", savedLanguage,
@@ -209,7 +211,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
                             try
                             {
-                                var culture = CultureInfo.GetCultureInfo(value);
+                                var culture = CultureInfo.GetCultureInfo(_cs2ClientLanguageMapping[value]);
                                 ClientCultures[gameClient.Slot] = culture;
 
                                 await Task.Run(async () =>
@@ -217,8 +219,8 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                                     try
                                     {
                                         await _userLanguageService.SaveUserLanguageAsync(
-                                            gameClient.SteamId.AccountId, value);
-                                        Logger.LogDebug("Saved language {Language} for player {SteamId}", value,
+                                            gameClient.SteamId.AccountId, culture.TwoLetterISOLanguageName);
+                                        Logger.LogWarning("Saved language {Language} for player {SteamId}", culture.TwoLetterISOLanguageName,
                                             gameClient.SteamId.AccountId);
                                     }
                                     catch (Exception ex)
@@ -256,7 +258,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                     }
                     catch (Exception cultureEx)
                     {
-                        Logger.LogError(cultureEx, "Error processing client language for {SteamId}",
+                        Logger.LogError(cultureEx, "Error processing client language for {SteamId}. using default culture",
                             gameClient.SteamId.AccountId);
                         ClientCultures[gameClient.Slot] = ServerDefaultCulture;
                     }
@@ -269,4 +271,11 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     {
         ClientCultures.Remove(client.Slot);
     }
+    
+    // TODO() Add more language mapping
+    private readonly Dictionary<string, string> _cs2ClientLanguageMapping = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Japanese", "ja-JP" },
+        { "English", "en-US" },
+    };
 }
