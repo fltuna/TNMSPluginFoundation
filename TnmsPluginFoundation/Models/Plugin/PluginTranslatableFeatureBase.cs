@@ -38,14 +38,14 @@ public class PluginTranslatableFeatureBase(IServiceProvider serviceProvider) : P
     {
         if (player == null)
         {
-            Plugin.SharedSystem.GetModSharp().LogMessage(message);
+            Console.WriteLine(message);
             return;
         }
 
         var playerController = player.GetPlayerController();
         
         if (playerController == null)
-            Plugin.SharedSystem.GetModSharp().LogMessage(message);
+            Console.WriteLine(message);
         else
             playerController.PrintToChat(message);
     }
