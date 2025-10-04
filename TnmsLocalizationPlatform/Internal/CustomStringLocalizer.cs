@@ -13,7 +13,8 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
         {
             if (!translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
             {
-                translation = translations.First().Value;
+                if(translation == null)
+                    return new LocalizedString(name, name, false);
             }
             
             var value = translation.GetValueOrDefault(name, name);
@@ -56,7 +57,7 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             LocalizedString value;
             if (!translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
             {
-                value = this[name, arguments];
+                value = this[name];
             }
             else
             {
