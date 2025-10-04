@@ -17,6 +17,12 @@ public interface ITnmsLocalizationPlatform
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module);
     
     /// <summary>
+    /// Reload all modules translations from files.
+    /// </summary>
+    /// <returns></returns>
+    public bool ReloadAllTranslations();
+    
+    /// <summary>
     /// Set client culture.
     /// </summary>
     /// <param name="client"></param>

@@ -23,6 +23,8 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     private ITnmsCentralizedDbPlatform? _dbPlatform;
     private LocalizationDbContext? _dbContext;
     private UserLanguageService _userLanguageService = null!;
+    
+    private readonly ConcurrentDictionary<string, CustomStringLocalizer> _loadedLocalizers = new();
 
     public TnmsLocalizationPlatform(ISharedSystem sharedSystem,
         string? dllPath,
@@ -177,7 +179,25 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
     {
-        return new CustomStringLocalizer(new LanguageDataParser(Path.Combine(module.ModuleDirectory, "lang")).Parse());
+        _loadedLocalizers[module.ModuleDirectory] = new CustomStringLocalizer(new LanguageDataParser(Path.Combine(module.ModuleDirectory, "lang")).Parse());
+        return _loadedLocalizers[module.ModuleDirectory];
+    }
+
+    public bool ReloadAllTranslations()
+    {
+        try
+        {
+            foreach (var (modulePath, localizer) in _loadedLocalizers)
+            {
+                localizer.UpdateTranslations(new LanguageDataParser(Path.Combine(modulePath, "lang")).Parse());
+            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error reloading translations");
+            return false;
+        }
     }
 
     public void SetClientCulture(IGameClient client, CultureInfo culture)
