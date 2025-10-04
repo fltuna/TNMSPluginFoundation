@@ -50,11 +50,9 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// </summary>
     internal static ISharedSystem StaticSharedSystem => _sharedSystem;
 
-    public static IExtendableTargeting ExtendableTargeting => _extendableTargeting;
-    private static IExtendableTargeting _extendableTargeting = null!;
+    public static IExtendableTargeting ExtendableTargeting { get; private set; } = null!;
 
-    public static IAdminManager AdminManager => _adminManager;
-    private static IAdminManager _adminManager = null!;
+    public static IAdminManager AdminManager { get; private set; } = null!;
 
 
     public ITnmsLocalizer Localizer { get; private set; } = null!;
@@ -219,11 +217,11 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
         ConVarConfigurationService.ExecuteConfigs();
 
         var adminSystem = _sharedSystem.GetSharpModuleManager().GetRequiredSharpModuleInterface<IAdminManager>(IAdminManager.ModSharpModuleIdentity).Instance;
-        _adminManager = adminSystem ?? throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
+        AdminManager = adminSystem ?? throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
 
         var extendableTargeting = _sharedSystem.GetSharpModuleManager()
             .GetRequiredSharpModuleInterface<IExtendableTargeting>(IExtendableTargeting.ModSharpModuleIdentity).Instance;
-        _extendableTargeting = extendableTargeting ?? throw new InvalidOperationException("TnmsExtendableTargeting is not found! Make sure TnmsExtendableTargeting is installed!");
+        ExtendableTargeting = extendableTargeting ?? throw new InvalidOperationException("TnmsExtendableTargeting is not found! Make sure TnmsExtendableTargeting is installed!");
 
         var tnmsLocalizer = _sharedSystem.GetSharpModuleManager()
             .GetRequiredSharpModuleInterface<ITnmsLocalizationPlatform>(
