@@ -298,7 +298,7 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Register module without hot reload state.
     /// </summary>
     /// <typeparam name="T">Any classes that inherited a PluginModuleBase</typeparam>
-    protected void RegisterModule<T>() where T : PluginModuleBase
+    protected T RegisterModule<T>() where T : PluginModuleBase
     {
         var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
         _loadedModules.Add(module);
@@ -308,6 +308,7 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
         // And if the module is API or something, required before call OnAllPluginsLoaded.
         RebuildServiceProvider();
         Logger.LogInformation($"{module.PluginModuleName} has been initialized");
+        return module;
     }
 
     /// <summary>
