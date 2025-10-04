@@ -1,10 +1,7 @@
-using Sharp.Shared.Definition;
+﻿using Sharp.Shared.Definition;
 
-namespace TnmsPluginFoundation.Utils.UI.Chat;
+namespace TnmsLocalizationPlatform.Util;
 
-/// <summary>
-/// Utility class for manipulating ColorText
-/// </summary>
 public static class ChatColorUtil
 {
     private static readonly Dictionary<string, string> ColorMappings = new(StringComparer.OrdinalIgnoreCase)
@@ -30,11 +27,6 @@ public static class ChatColorUtil
         { "{HEAD}", ChatColor.Head }
     };
 
-    /// <summary>
-    /// Replaces color text such as {DarkRed}.
-    /// </summary>
-    /// <param name="message">The text want to replace</param>
-    /// <returns>Replaced text</returns>
     public static string FormatChatMessage(string message)
     {
         return ProcessColorCodes(message);

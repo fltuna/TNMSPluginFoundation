@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Localization;
 using Sharp.Shared.Objects;
 using TnmsLocalizationPlatform.Shared;
+using TnmsLocalizationPlatform.Util;
 
 namespace TnmsLocalizationPlatform.Internal;
 
@@ -18,7 +19,7 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
             
             var value = translation.GetValueOrDefault(name, name);
-            return new LocalizedString(name, value, !translations.ContainsKey(name));
+            return new LocalizedString(name, ChatColorUtil.FormatChatMessage(value), !translations.ContainsKey(name));
         }
     }
 
@@ -26,9 +27,15 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
     {
         get
         {
-            var format = this[name];
-            var value = string.Format(format.Value, arguments);
-            return new LocalizedString(name, value, format.ResourceNotFound);
+            if (!translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
+            {
+                translation = translations.First().Value;
+            }
+            var format = translation.GetValueOrDefault(name, name);
+        
+            format = ChatColorUtil.FormatChatMessage(format);
+            var value = string.Format(format, arguments);
+            return new LocalizedString(name, value, !translations.ContainsKey(name));
         }
     }
     
@@ -44,7 +51,8 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
             else
             {
-                value = new LocalizedString(name, translation.GetValueOrDefault(name, name), !translations.ContainsKey(name));
+                var rawValue = translation.GetValueOrDefault(name, name);
+                value = new LocalizedString(name, ChatColorUtil.FormatChatMessage(rawValue), !translations.ContainsKey(name));
             }
             return value;
         }
@@ -54,18 +62,15 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
     {
         get
         {
-            LocalizedString value;
             if (!translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
             {
-                value = this[name];
+                return this[name, arguments];
             }
-            else
-            {
-                var format = this[name, culture];
-                var toVar = string.Format(format.Value, arguments);
-                value = new LocalizedString(name, toVar, format.ResourceNotFound);
-            }
-            return value;
+        
+            var format = translation.GetValueOrDefault(name, name);
+            format = ChatColorUtil.FormatChatMessage(format);
+            var value = string.Format(format, arguments);
+            return new LocalizedString(name, value, !translations.ContainsKey(name));
         }
     }
 
@@ -79,20 +84,31 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
 
     public LocalizedString ForClient(IGameClient client, string name, params object[] arguments)
     {
-        LocalizedString format;
-        string value;
+        string format;
         
         if (!TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
         {
-            format = this[name];
-            value = string.Format(format.Value, arguments);
+            if (!translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
+            {
+                translation = translations.First().Value;
+            }
+            format = translation.GetValueOrDefault(name, name);
         }
         else
         {
-            format = this[name, culture];
-            value = string.Format(format.Value, arguments);
+            if (!translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
+            {
+                if (!translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
+                {
+                    translation = translations.First().Value;
+                }
+            }
+            format = translation.GetValueOrDefault(name, name);
         }
-        return new LocalizedString(name, value, format.ResourceNotFound);
+        
+        format = ChatColorUtil.FormatChatMessage(format);
+        var value = string.Format(format, arguments);
+        return new LocalizedString(name, value, !translations.ContainsKey(name));
     }
 
     public IEnumerable<LocalizedString> GetAllStringsByCulture(CultureInfo culture)
