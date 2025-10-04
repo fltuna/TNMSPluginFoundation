@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using TnmsPluginFoundation.Example.Modules;
+using TnmsPluginFoundation.Example.Modules.LocalizationTest;
 using TnmsPluginFoundation.Example.Modules.PermissionTest;
 using TnmsPluginFoundation.Example.Modules.TargetingTest;
 using TnmsPluginFoundation.Example.Modules.TestCommand;
@@ -32,6 +33,7 @@ public class TnmsPluginFoundationExample(
         RegisterModule<TnmsPermissionTest>();
         RegisterModule<TestEventListener>();
         RegisterModule<TnmsTargetingTest>();
+        RegisterModule<LocalizationTest>();
         Logger.LogInformation("Hello from the TnmsPluginFoundation.Example at TnmsOnPluginLoad()");
     }
 

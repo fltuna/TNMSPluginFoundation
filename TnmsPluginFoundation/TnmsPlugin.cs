@@ -31,6 +31,7 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
         ArgumentNullException.ThrowIfNull(sharedSystem);
         _sharedSystem = sharedSystem;
         _hotReload = hotReload;
+        ModuleDirectory = dllPath;
 
         var   factory = _sharedSystem.GetLoggerFactory();
 
@@ -55,10 +56,10 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
     public static IAdminManager AdminManager => _adminManager;
     private static IAdminManager _adminManager = null!;
 
-    public ITnmsLocalizer Localizer { get; private set; } = null!;
 
-    public string ModuleDirectory => "PathToModule";
-    
+    public ITnmsLocalizer Localizer { get; private set; } = null!;
+    public string ModuleDirectory { get; }
+
 
     /*
      * Mod Sharp Related

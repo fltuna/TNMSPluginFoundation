@@ -177,7 +177,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
     {
         // TODO() Add language data loading feature
-        return new CustomStringLocalizer(new Dictionary<string, Dictionary<string, string>>());
+        return new CustomStringLocalizer(new LanguageDataParser(Path.Combine(module.ModuleDirectory, "lang")).Parse());
     }
 
 
