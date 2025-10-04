@@ -31,6 +31,9 @@ public class ConVarConfigurationService(TnmsPlugin plugin)
     /// </summary>
     public void SaveAllConfigToFile()
     {
+        if (string.IsNullOrEmpty(plugin.ConVarConfigPath))
+            return;
+        
         if(IsFileExists(plugin.ConVarConfigPath))
             return;
 
@@ -69,6 +72,9 @@ public class ConVarConfigurationService(TnmsPlugin plugin)
     /// </summary>
     public void ExecuteConfigs()
     {
+        if (string.IsNullOrEmpty(plugin.ConVarConfigPath))
+            return;
+        
         // Check if ConVarConfigPath is not directory, and file is not exists
         if (!Directory.Exists(plugin.ConVarConfigPath) && !File.Exists(plugin.ConVarConfigPath))
         {
@@ -91,6 +97,9 @@ public class ConVarConfigurationService(TnmsPlugin plugin)
 
     private bool IsFileExists(string path)
     {
+        if (string.IsNullOrEmpty(path))
+            return false;
+        
         string directory = Path.GetDirectoryName(path)!;
         if (!Directory.Exists(directory))
         {

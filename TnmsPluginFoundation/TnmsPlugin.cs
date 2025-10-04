@@ -103,9 +103,10 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
     public abstract string BaseCfgDirectoryPath { get; }
     
     /// <summary>
-    /// ConVar configuration path, this path is used for saving All ConVar config.
-    /// Relative path from game/csgo/cfg/
-    /// Also if this path defined a specific file, then module config is not generated.
+    /// ConVar configuration path, this path is used for saving All ConVar config. <br/>
+    /// Relative path from game/csgo/cfg/ <br/>
+    /// Also if this path defined a specific file, then module config is not generated. <br/>
+    /// If your plugin doesn't use any ConVar, you can return empty string. <br/>
     /// </summary>
     public abstract string ConVarConfigPath { get; }
 
