@@ -56,6 +56,7 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
 
 
     public ITnmsLocalizer Localizer { get; private set; } = null!;
+    public ITnmsLocalizationPlatform LocalizationPlatform { get; private set; } = null!;
     public string ModuleDirectory { get; }
 
 
@@ -227,7 +228,11 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
         var tnmsLocalizer = _sharedSystem.GetSharpModuleManager()
             .GetRequiredSharpModuleInterface<ITnmsLocalizationPlatform>(
                 ITnmsLocalizationPlatform.ModSharpModuleIdentity).Instance;
-        Localizer = tnmsLocalizer?.CreateStringLocalizer(this) ?? throw new InvalidOperationException("TnmsLocalizationPlatform is not found! Make sure TnmsLocalizationPlatform is installed!");
+        
+        LocalizationPlatform = tnmsLocalizer ??
+                               throw new InvalidOperationException(
+                                   "TnmsLocalizationPlatform is not found! Make sure TnmsLocalizationPlatform is installed!");
+        Localizer = LocalizationPlatform.CreateStringLocalizer(this);
     }
 
     /// <summary>

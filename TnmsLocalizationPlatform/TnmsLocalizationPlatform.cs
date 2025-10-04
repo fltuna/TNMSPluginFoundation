@@ -171,13 +171,23 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
     private bool IsAutoMigrationEnabled()
     {
+        // TODO() Load this from config
         return true;
     }
 
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module)
     {
-        // TODO() Add language data loading feature
         return new CustomStringLocalizer(new LanguageDataParser(Path.Combine(module.ModuleDirectory, "lang")).Parse());
+    }
+
+    public void SetClientCulture(IGameClient client, CultureInfo culture)
+    {
+        ClientCultures[client.Slot] = culture;
+    }
+
+    public CultureInfo GetClientCulture(IGameClient client)
+    {
+        return ClientCultures.TryGetValue(client.Slot, out var culture) ? culture : ServerDefaultCulture;
     }
 
 
@@ -205,51 +215,45 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                 Logger.LogError(ex, "Error loading saved language for {SteamId}", client.SteamId.AccountId);
             }
             
-            
-            SharedSystem.GetClientManager().QueryConVar(client, "cl_language",
-                async (gameClient, status, name, value) =>
+            SharedSystem.GetClientManager().QueryConVar(client, "cl_language", (gameClient, status, name, value) =>
                 {
                     if (status != QueryConVarValueStatus.ValueIntact)
                     {
                         Logger.LogWarning("Failed to get client language for {SteamId}", gameClient.SteamId.AccountId);
                         return;
                     }
-
-                    try
-                    {
-                        var culture = ParseClientLanguageToCulture(gameClient, value);
-                        ClientCultures[gameClient.Slot] = culture;
-
-                        await Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await _userLanguageService.SaveUserLanguageAsync(
-                                    gameClient.SteamId.AccountId, culture.TwoLetterISOLanguageName);
-                                Logger.LogDebug("Saved language {Language} for player {SteamId}", culture.TwoLetterISOLanguageName,
-                                    gameClient.SteamId.AccountId);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.LogError(ex, "Error saving language to database for {SteamId}", gameClient.SteamId.AccountId);
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error processing client language for {SteamId}. using default culture", client.SteamId.AccountId);
-                    }
-                });
+                    
+                    var culture = ParseClientLanguageToCulture(value);
+                    ClientCultures[gameClient.Slot] = culture;
+            });
         });
     }
 
     public void OnClientDisconnected(IGameClient client, NetworkDisconnectionReason reason)
     {
-        ClientCultures.Remove(client.Slot, out _);
+        ClientCultures.Remove(client.Slot, out var culture);
+        
+        if (culture == null)
+            return;
+        
+        Task.Run(() =>
+        {
+            try
+            {
+                _ = _userLanguageService.SaveUserLanguageAsync(
+                    client.SteamId.AccountId, culture.TwoLetterISOLanguageName);
+                Logger.LogDebug("Saved language {Language} for player {SteamId}", culture.TwoLetterISOLanguageName,
+                    client.SteamId.AccountId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error saving language to database for {SteamId}", client.SteamId.AccountId);
+            }
+        });
     }
     
     
-    private CultureInfo ParseClientLanguageToCulture(IGameClient client, string language)
+    private CultureInfo ParseClientLanguageToCulture(string language)
     {
         return CultureInfo.GetCultureInfo(GetLanguageCodeFromClientLanguage(language));
     }

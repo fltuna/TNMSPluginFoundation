@@ -15,4 +15,18 @@ public interface ITnmsLocalizationPlatform
     /// <param name="module"></param>
     /// <returns></returns>
     public ITnmsLocalizer CreateStringLocalizer(ILocalizableModule module);
+    
+    /// <summary>
+    /// Set client culture.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="culture"></param>
+    public void SetClientCulture(IGameClient client, CultureInfo culture);
+    
+    /// <summary>
+    /// Get client culture. If not set, return server default culture.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <returns></returns>
+    public CultureInfo GetClientCulture(IGameClient client);
 }
