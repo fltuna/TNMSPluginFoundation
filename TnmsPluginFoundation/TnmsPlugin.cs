@@ -252,6 +252,8 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
             RemoveTnmsCommand(TnmsAbstractedCommands[i]);
         }
         TnmsAbstractedCommands.Clear();
+        
+        ServiceProvider.Dispose();
     }
 
     /// <summary>
@@ -355,11 +357,15 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Add TnmsAbstracted command to ModSharp
     /// </summary>
     /// <param name="command">Classes that inherited TnmsAbstractCommandBase</param>
-    /// <param name="registrationType">Command regstration type</param>
     public void AddTnmsCommand(TnmsAbstractCommandBase command)
     {
         if (command.CommandRegistrationType == 0)
             throw new ArgumentException("Command registration type should have at least 1 flag!");
+        
+        if (TnmsAbstractedCommands.Any(c => c.CommandName == command.CommandName))
+        {
+            throw new InvalidOperationException($"Command '{command.CommandName}' is already registered");
+        }
         
         if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
             SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);

@@ -61,12 +61,10 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
             _lastFoundTargets = foundTargets;
             return TnmsCommandValidationResult.Success;
         }
-        
-        foreach (var foundTarget in foundTargets.ToList())
-        {
-            if(!TnmsPlugin.AdminManager.ClientCanTarget(client, foundTarget))
-                foundTargets.Remove(foundTarget);
-        }
+
+        foundTargets = foundTargets
+            .Where(target => TnmsPlugin.AdminManager.ClientCanTarget(client, target))
+            .ToList();
 
         if (!foundTargets.Any())
         {

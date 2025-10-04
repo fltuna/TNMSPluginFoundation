@@ -120,7 +120,7 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
      public bool ResolveTarget(string targetString, IGameClient? caller, out List<IGameClient> foundTargets)
      {
          
-         if (targetString.StartsWith('#'))
+         if (targetString.StartsWith('#') && targetString.Length > 1)
          {
              var param = targetString.Substring(1);
              
@@ -155,6 +155,12 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
              var parts = targetString.Split('=', 2);
              var prefix = parts[0];
              var param = parts[1];
+             
+             if (param.Length < 1)
+             {
+                 foundTargets = [];
+                 return false;
+             }
 
              if (_paramTargets.TryGetValue(prefix, out var paramPredicate))
              {

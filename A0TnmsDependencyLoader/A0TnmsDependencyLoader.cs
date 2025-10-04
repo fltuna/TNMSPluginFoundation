@@ -92,6 +92,7 @@ public class A0TnmsDependencyLoader: IModSharpModule
     public void Shutdown()
     {
         _logger.LogInformation("Shutting down DependencyLoader module");
+        AssemblyLoadContext.Default.Resolving -= OnAssemblyResolving;
         _loadedDependencies.Clear();
     }
 

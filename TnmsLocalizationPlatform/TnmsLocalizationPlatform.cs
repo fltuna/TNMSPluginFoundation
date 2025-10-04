@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Concurrent;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -50,7 +51,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
     internal static TnmsLocalizationPlatform Instance { get; private set; } = null!;
 
-    internal readonly Dictionary<byte, CultureInfo> ClientCultures = new();
+    internal readonly ConcurrentDictionary<byte, CultureInfo> ClientCultures = new();
 
     // TODO() Get ServerDefault culture from config
     internal CultureInfo ServerDefaultCulture { get; set; } = new CultureInfo("en-US");
@@ -244,7 +245,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 
     public void OnClientDisconnected(IGameClient client, NetworkDisconnectionReason reason)
     {
-        ClientCultures.Remove(client.Slot);
+        ClientCultures.Remove(client.Slot, out _);
     }
     
     
