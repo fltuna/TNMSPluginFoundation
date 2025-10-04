@@ -381,6 +381,15 @@ public abstract class TnmsPlugin: IModSharpModule, ILocalizableModule
 
         TnmsAbstractedCommands.Add(command);
     }
+    
+    /// <summary>
+    /// Add TnmsAbstracted command to ModSharp
+    /// </summary>
+    public void AddTnmsCommandByClass<T>() where T : TnmsAbstractCommandBase
+    {
+        var command = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
+        AddTnmsCommand(command);
+    }
 
     /// <summary>
     /// Remove TnmsAbstracted command to ModSharp
