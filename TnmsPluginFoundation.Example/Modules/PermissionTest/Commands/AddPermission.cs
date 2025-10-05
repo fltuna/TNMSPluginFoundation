@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
+using TnmsAdministrationPlatform.Shared;
 using TnmsPluginFoundation.Extensions.Client;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Command.Validators;
@@ -29,7 +30,7 @@ public class AddPermission(IServiceProvider provider) : TnmsAbstractCommandBase(
         
         var permission = commandInfo.GetArg(1);
 
-        if (TnmsPlugin.AdminManager.AddPermissionToClient(client, permission))
+        if (TnmsPlugin.AdminManager.AddPermissionToClient(client, permission) == PermissionSaveResult.Success)
         {
             client.GetPlayerController()!.PrintToChat($"Added permission '{permission}' to client.");
         }

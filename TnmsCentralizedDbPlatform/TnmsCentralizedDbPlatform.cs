@@ -50,11 +50,6 @@ public class TnmsCentralizedDbPlatform : IModSharpModule, ITnmsCentralizedDbPlat
     {
         _logger.LogInformation("Unloaded TnmsCentralizedDbPlatform");
     }
-    
-    public ITnmsRepository<T> CreateRepository<T>(DbContext context) where T : class
-    {
-        return new TnmsRepository<T>(context);
-    }
 
     public DbContextOptionsBuilder<TContext> ConfigureDbContext<TContext>(
         DbConnectionParameters parameters,

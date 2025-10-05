@@ -120,8 +120,8 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
                 return false;
             }
 
-            var repository = _dbPlatform.CreateRepository<Models.UserLanguage>(_dbContext);
-            _userLanguageService = new UserLanguageService(_dbContext, repository);
+            var repository = new UserLanguageRepository(_dbContext);
+            _userLanguageService = new UserLanguageService(repository);
 
             Logger.LogInformation("Database initialized successfully");
             return true;

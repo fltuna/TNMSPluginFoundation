@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
@@ -7,6 +8,7 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform.Shared;
+using TnmsCentralizedDbPlatform.Shared;
 
 namespace TnmsAdministrationPlatform;
 
@@ -34,6 +36,9 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     private readonly Dictionary<ulong, IAdminUser> _userPermissions = new();
     private readonly Dictionary<string, IAdminGroup> _groupPermissions = new();
+    
+    // TODO() Make this configurable
+    // private TnmsDatabaseProviderType _dbProviderType = TnmsDatabaseProviderType.Sqlite;
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 20;
@@ -151,30 +156,46 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         return false;
     }
 
-    public bool AddPermissionToClient(IGameClient client, string permission)
+    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission)
     {
-        return _userPermissions[client.SteamId.AccountId].Permissions.Add(permission);
+        return _userPermissions[client.SteamId.AccountId].Permissions.Add(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
     }
 
-    public bool RemovePermissionFromClient(IGameClient client, string permission)
+    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission)
     {
-        return _userPermissions[client.SteamId.AccountId].Permissions.Remove(permission);
-    }
-    
-    public bool AddClientToGroup(IGameClient client, string groupName)
-    {
-        if (!_groupPermissions.TryGetValue(groupName, out var group))
-            return false;
-        
-        return _userPermissions[client.SteamId.AccountId].Groups.Add(group);
+        return _userPermissions[client.SteamId.AccountId].Permissions.Remove(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
     }
 
-    public bool RemoveClientFromGroup(IGameClient client, string groupName)
+    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission)
     {
         if (!_groupPermissions.TryGetValue(groupName, out var group))
-            return false;
+            return PermissionSaveResult.GroupNotFound;
         
-        return _userPermissions[client.SteamId.AccountId].Groups.Remove(group);
+        return group.Permissions.Add(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+    }
+
+    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission)
+    {
+        if (!_groupPermissions.TryGetValue(groupName, out var group))
+            return PermissionSaveResult.GroupNotFound;
+        
+        return group.Permissions.Remove(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+    }
+
+    public PermissionSaveResult AddClientToGroup(IGameClient client, string groupName)
+    {
+        if (!_groupPermissions.TryGetValue(groupName, out var group))
+            return PermissionSaveResult.GroupNotFound;
+        
+        return _userPermissions[client.SteamId.AccountId].Groups.Add(group) ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientAlreadyInGroup;
+    }
+
+    public PermissionSaveResult RemoveClientFromGroup(IGameClient client, string groupName)
+    {
+        if (!_groupPermissions.TryGetValue(groupName, out var group))
+            return PermissionSaveResult.GroupNotFound;
+        
+        return _userPermissions[client.SteamId.AccountId].Groups.Remove(group) ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientDontHaveGroup;
     }
 
     public IAdminUser GetAdminInformation(IGameClient client)

@@ -5,25 +5,21 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TnmsLocalizationPlatform.Data;
 using TnmsLocalizationPlatform.Models;
-using TnmsCentralizedDbPlatform.Shared;
 
 namespace TnmsLocalizationPlatform.Services;
 
 public class UserLanguageService
 {
-    private readonly LocalizationDbContext _context;
-    private readonly ITnmsRepository<UserLanguage> _repository;
+    private readonly IUserLanguageRepository _repository;
     
-    public UserLanguageService(LocalizationDbContext context, ITnmsRepository<UserLanguage> repository)
+    public UserLanguageService(IUserLanguageRepository repository)
     {
-        _context = context;
         _repository = repository;
     }
     
     public async Task<UserLanguage?> GetUserLanguageAsync(long steamId)
     {
-        return await _repository.Query()
-            .FirstOrDefaultAsync(ul => ul.SteamId == steamId);
+        return await _repository.GetByIdAsync(steamId);
     }
     
     public async Task<string?> GetUserLanguageCodeAsync(long steamId)
@@ -41,6 +37,7 @@ public class UserLanguageService
             existingUserLanguage.LanguageCode = languageCode;
             existingUserLanguage.UpdatedAt = DateTime.UtcNow;
             await _repository.UpdateAsync(existingUserLanguage);
+            return existingUserLanguage;
         }
         else
         {
@@ -51,30 +48,18 @@ public class UserLanguageService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            await _repository.AddAsync(newUserLanguage);
-            existingUserLanguage = newUserLanguage;
+            return await _repository.AddAsync(newUserLanguage);
         }
-        
-        await _context.SaveChangesAsync();
-        return existingUserLanguage;
     }
     
     public async Task<bool> DeleteUserLanguageAsync(long steamId)
     {
-        var userLanguage = await GetUserLanguageAsync(steamId);
-        if (userLanguage == null)
-            return false;
-            
-        _context.UserLanguages.Remove(userLanguage);
-        await _context.SaveChangesAsync();
+        await _repository.DeleteAsync(steamId);
         return true;
     }
     
-    public async Task<Dictionary<string, int>> GetLanguageStatisticsAsync()
+    public async Task<List<UserLanguage>> GetAllUserLanguagesAsync()
     {
-        return await _repository.Query()
-            .GroupBy(ul => ul.LanguageCode)
-            .Select(g => new { LanguageCode = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.LanguageCode, x => x.Count);
+        return (await _repository.GetAllAsync()).ToList();
     }
 }

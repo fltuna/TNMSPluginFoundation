@@ -1,4 +1,5 @@
-﻿using Sharp.Shared.Objects;
+﻿using System.Threading.Tasks;
+using Sharp.Shared.Objects;
 
 namespace TnmsAdministrationPlatform.Shared;
 
@@ -29,8 +30,11 @@ public interface IAdminManager
     /// </summary>
     /// <param name="client">Client to check</param>
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
-    /// <returns>true if permission is successfully added to client, false if player already have specified permission</returns>
-    public bool AddPermissionToClient(IGameClient client, string permission);
+    /// <returns>
+    /// Success if permission was added to client <br/>
+    /// FailureDuplicatePermission if client already had permission <br/>
+    /// </returns>
+    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission);
     
     
     /// <summary>
@@ -38,25 +42,60 @@ public interface IAdminManager
     /// </summary>
     /// <param name="client">Client to check</param>
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
-    /// <returns>true if permission is successfully removed from client, false if player don't have specified permission</returns>
-    public bool RemovePermissionFromClient(IGameClient client, string permission);
+    /// <returns>
+    /// Success if permission was removed from client <br/>
+    /// FailureDontHavePermission if client did not have permission <br/>
+    /// </returns>
+    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission);
+    
+    /// <summary>
+    /// Add permission to group
+    /// </summary>
+    /// <param name="groupName"></param>
+    /// <param name="permission"></param>
+    /// <returns>
+    /// GroupNotFound if no group matches with groupName <br/>
+    /// Success if permission was added to group <br/>
+    /// FailureDuplicatePermission if group already had permission <br/>
+    /// </returns>
+    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission);
+    
+    /// <summary>
+    /// Remove permission from group
+    /// </summary>
+    /// <param name="groupName"></param>
+    /// <param name="permission"></param>
+    /// <returns>
+    /// GroupNotFound if no group matches with groupName <br/>
+    /// Success if permission was removed from group <br/>
+    /// FailureDontHavePermission if group did not have permission <br/>
+    /// </returns>
+    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission);
     
     /// <summary>
     /// Add client to admin group
     /// </summary>
     /// <param name="client"></param>
     /// <param name="groupName"></param>
-    /// <returns></returns>
-    public bool AddClientToGroup(IGameClient client, string groupName);
+    /// <returns>
+    /// GroupNotFound if no group matches with groupName <br/>
+    /// Success if client was removed from group <br/>
+    /// FailureClientAlreadyInGroup if client was already in group <br/>
+    /// </returns>
+    public PermissionSaveResult AddClientToGroup(IGameClient client, string groupName);
     
     /// <summary>
     /// Remove client from admin group
     /// </summary>
     /// <param name="client"></param>
     /// <param name="groupName"></param>
-    /// <returns></returns>
-    public bool RemoveClientFromGroup(IGameClient client, string groupName);
-    
+    /// <returns>
+    /// GroupNotFound if no group matches with groupName <br/>
+    /// Success if client was removed from group <br/>
+    /// FailureClientDontHaveGroup if client was not in group <br/>
+    /// </returns>
+    public PermissionSaveResult RemoveClientFromGroup(IGameClient client, string groupName);
+
     /// <summary>
     /// Get admin information associated with specified client
     /// </summary>
