@@ -50,7 +50,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     private readonly Dictionary<string, IAdminGroup> _groupPermissions = new();
     
     // TODO() Make this configurable
-    private TnmsDatabaseProviderType _dbProviderType = TnmsDatabaseProviderType.Sqlite;
+    private readonly TnmsDatabaseProviderType _dbProviderType = TnmsDatabaseProviderType.Sqlite;
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 20;
@@ -318,7 +318,6 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
 
     public void OnClientPostAdminCheck(IGameClient client)
     {
-        _logger.LogError("post admin check for {SteamId} ({PlayerName})", client.SteamId.AccountId, client.Name);
         _ = Task.Run(async () =>
         {
             try
@@ -339,8 +338,8 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
                 _userPermissions[client.SteamId.AccountId] = adminUser;
 
                 _logger.LogInformation(
-                    "Loaded admin data for user {SteamId} ({PlayerName}): {PermissionCount} permissions, {GroupCount} groups",
-                    client.SteamId.AccountId, client.Name, adminUser.Permissions.Count, adminUser.Groups.Count);
+                    "Loaded admin data for user {SteamId} ({PlayerName}): {PermissionCount} permissions, {GroupCount} groups, Immunity {Immunity}",
+                    client.SteamId.AccountId, client.Name, adminUser.Permissions.Count, adminUser.Groups.Count, adminUser.Immunity);
             }
             catch (Exception e)
             {
