@@ -42,10 +42,4 @@
             <_Parameter2>$(BuildDateTime)</_Parameter2>
         </AssemblyAttribute>
     </ItemGroup>
-
-    <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR_________CURRENTY_NOT_USED)' != ''">
-        <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
-        <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll" DestinationFolder="$(MOD_SHARP_DIR)\modules\$(ProjectName)" />
-        <Message Text="Successfully copied the plugin files" Importance="High" />
-    </Target>
 </Project>
