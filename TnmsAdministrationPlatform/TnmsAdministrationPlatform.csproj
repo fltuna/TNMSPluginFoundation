@@ -6,16 +6,10 @@
         <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
         <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
     </PropertyGroup>
-
-    <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
-        <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
-        <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll" DestinationFolder="$(MOD_SHARP_DIR)\modules\$(ProjectName)\reload" />
-        <Message Text="Successfully copied the plugin files" Importance="High" />
-    </Target>
     
     <ItemGroup>
         <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" ExcludeAssets="runtime" />
-        <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
+        <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="all"/>
     </ItemGroup>
 
 </Project>

@@ -13,7 +13,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
-        <ProjectReference Include="..\TnmsCentralizedDbPlatform.Shared\TnmsCentralizedDbPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
+        <ProjectReference Include="..\TnmsCentralizedDbPlatform.Shared\TnmsCentralizedDbPlatform.Shared.csproj"  Private="false" ExcludeAssets="all"/>
     </ItemGroup>
 
 </Project>

@@ -3,13 +3,14 @@
   <Import Project="..\config.props" />
 
   <PropertyGroup>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" ExcludeAssets="runtime" />
-    <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
-    <ProjectReference Include="..\TnmsExtendableTargeting.Shared\TnmsExtendableTargeting.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
-    <ProjectReference Include="..\TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj"  Private="false" ExcludeAssets="runtime"/>
+    <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj" Private="false" ExcludeAssets="runtime" PrivateAssets="runtime"/>
+    <ProjectReference Include="..\TnmsExtendableTargeting.Shared\TnmsExtendableTargeting.Shared.csproj" Private="false" ExcludeAssets="runtime" PrivateAssets="runtime"/>
+    <ProjectReference Include="..\TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj" Private="false" ExcludeAssets="runtime" PrivateAssets="runtime"/>
   </ItemGroup>
   
 </Project>

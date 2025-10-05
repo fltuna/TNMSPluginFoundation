@@ -21,8 +21,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj" Private="false" ExcludeAssets="runtime" />
-      <ProjectReference Include="..\TnmsCentralizedDbPlatform.Shared\TnmsCentralizedDbPlatform.Shared.csproj" Private="false" ExcludeAssets="runtime" />
+      <ProjectReference Include="..\TnmsLocalizationPlatform.Shared\TnmsLocalizationPlatform.Shared.csproj" Private="false" ExcludeAssets="all" />
+      <ProjectReference Include="..\TnmsCentralizedDbPlatform.Shared\TnmsCentralizedDbPlatform.Shared.csproj" Private="false" ExcludeAssets="all" />
     </ItemGroup>
 
 </Project>

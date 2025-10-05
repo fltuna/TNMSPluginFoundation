@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 title Building TNMS Projects
 rd ".build/gamedata" /S /Q
 rd ".build/modules" /S /Q
@@ -6,22 +7,52 @@ rd ".build/shared" /S /Q
 cls
 
 REM Define projects to build (add/remove projects as needed)
-set PROJECTS=TnmsPluginFoundation TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example A0TnmsDependencyLoader
-set SHARED_PROJECTS=TnmsAdministrationPlatform.Shared TnmsCentralizedDbPlatform.Shared TnmsExtendableTargeting.Shared TnmsLocalizationPlatform.Shared
+set PROJECTS=TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example A0TnmsDependencyLoader
+set SHARED_PROJECTS=TnmsAdministrationPlatform.Shared TnmsCentralizedDbPlatform.Shared TnmsExtendableTargeting.Shared TnmsLocalizationPlatform.Shared TnmsPluginFoundation
 
 REM Define DLLs to remove (provided by ModSharp)
-set DLLS_TO_REMOVE=Google.Protobuf.dll McMaster.NETCore.Plugins.dll Microsoft.Extensions.Configuration.dll Microsoft.Extensions.Configuration.Abstractions.dll Microsoft.Extensions.Configuration.Binder.dll Microsoft.Extensions.Configuration.FileExtensions.dll Microsoft.Extensions.Configuration.Json.dll Microsoft.Extensions.DependencyInjection.dll Microsoft.Extensions.DependencyInjection.Abstractions.dll Microsoft.Extensions.Diagnostics.dll Microsoft.Extensions.Diagnostics.Abstractions.dll Microsoft.Extensions.FileProviders.Abstractions.dll Microsoft.Extensions.FileProviders.Physical.dll Microsoft.Extensions.FileSystemGlobbing.dll Microsoft.Extensions.Http.dll Microsoft.Extensions.Logging.dll Microsoft.Extensions.Logging.Abstractions.dll Microsoft.Extensions.Logging.Configuration.dll Microsoft.Extensions.Logging.Console.dll Microsoft.Extensions.Options.dll Microsoft.Extensions.Options.ConfigurationExtensions.dll Microsoft.Extensions.Primitives.dll Serilog.dll Serilog.Extensions.Logging.dll Serilog.Sinks.Console.dll Serilog.Sinks.File.dll Serilog.Sinks.Async.dll Serilog.Expressions.dll
+set DLLS_TO_REMOVE=Google.Protobuf.dll McMaster.NETCore.Plugins.dll Microsoft.Extensions.Configuration.dll Microsoft.Extensions.Configuration.Abstractions.dll Microsoft.Extensions.Configuration.Binder.dll Microsoft.Extensions.Configuration.FileExtensions.dll Microsoft.Extensions.Configuration.Json.dll Microsoft.Extensions.DependencyInjection.dll Microsoft.Extensions.DependencyInjection.Abstractions.dll Microsoft.Extensions.Diagnostics.dll Microsoft.Extensions.Diagnostics.Abstractions.dll Microsoft.Extensions.FileProviders.Abstractions.dll Microsoft.Extensions.FileProviders.Physical.dll Microsoft.Extensions.FileSystemGlobbing.dll Microsoft.Extensions.Http.dll Microsoft.Extensions.Logging.dll Microsoft.Extensions.Logging.Abstractions.dll Microsoft.Extensions.Logging.Configuration.dll Microsoft.Extensions.Logging.Console.dll Microsoft.Extensions.Options.dll Microsoft.Extensions.Options.ConfigurationExtensions.dll Microsoft.Extensions.Primitives.dll Serilog.dll Serilog.Extensions.Logging.dll Serilog.Sinks.Console.dll Serilog.Sinks.File.dll Serilog.Sinks.Async.dll Serilog.Expressions.dll System.Text.Json
+
+REM Define Shared DLLs to remove from TnmsPluginFoundation.Example (these are provided by shared directory)
+set SHARED_DLLS_TO_REMOVE=TnmsAdministrationPlatform.Shared.dll TnmsExtendableTargeting.Shared.dll TnmsLocalizationPlatform.Shared.dll TnmsCentralizedDbPlatform.Shared.dll
 
 echo Building shared projects...
 for %%P in (%SHARED_PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --output ".build/shared/%%P"
+        dotnet build %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers -c Release --no-dependencies
+        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
         
         echo Removing DLLs that already present in ModSharp from %%P...
         for %%D in (%DLLS_TO_REMOVE%) do (
             if exist ".build\shared\%%P\%%D" (
                 del ".build\shared\%%P\%%D" /Q
+            )
+        )
+        
+        REM Move all DLLs except the main shared DLL to dependencies directory
+        set MAIN_DLL=%%P.dll
+        set MODULE_DIR=.build\shared\%%P
+        set DEP_DIR=!MODULE_DIR!\dependencies
+        set HAS_DEPENDENCIES=0
+        
+        REM Check if there are any dependency DLLs to move
+        for %%F in (!MODULE_DIR!\*.dll) do (
+            if /I not "%%~nxF"=="!MAIN_DLL!" (
+                set HAS_DEPENDENCIES=1
+            )
+        )
+        
+        REM Only create dependencies directory and move files if dependencies exist
+        if !HAS_DEPENDENCIES! EQU 1 (
+            if not exist "!DEP_DIR!" (
+                mkdir "!DEP_DIR!"
+            )
+            
+            for %%F in (!MODULE_DIR!\*.dll) do (
+                if /I not "%%~nxF"=="!MAIN_DLL!" (
+                    move "%%F" "!DEP_DIR!\"
+                )
             )
         )
     ) else (
@@ -34,12 +65,50 @@ echo Building main projects...
 for %%P in (%PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --output ".build/modules/%%P"
+        dotnet build %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers -c Release --no-dependencies
+        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --no-build --output ".build/modules/%%P"
         
         echo Removing DLLs that already present in ModSharp from %%P...
         for %%D in (%DLLS_TO_REMOVE%) do (
             if exist ".build\modules\%%P\%%D" (
                 del ".build\modules\%%P\%%D" /Q
+            )
+        )
+        
+        REM Special handling for TnmsPluginFoundation.Example - remove shared DLLs
+        if "%%P"=="TnmsPluginFoundation.Example" (
+            echo Removing Shared DLLs from TnmsPluginFoundation.Example...
+            for %%S in (%SHARED_DLLS_TO_REMOVE%) do (
+                if exist ".build\modules\%%P\%%S" (
+                    echo Removing %%S from %%P
+                    del ".build\modules\%%P\%%S" /Q
+                )
+            )
+        )
+        
+        REM Move all DLLs except the main plugin DLL to dependencies directory
+        set MAIN_DLL=%%P.dll
+        set MODULE_DIR=.build\modules\%%P
+        set DEP_DIR=!MODULE_DIR!\dependencies
+        set HAS_DEPENDENCIES=0
+        
+        REM Check if there are any dependency DLLs to move
+        for %%F in (!MODULE_DIR!\*.dll) do (
+            if /I not "%%~nxF"=="!MAIN_DLL!" (
+                set HAS_DEPENDENCIES=1
+            )
+        )
+        
+        REM Only create dependencies directory and move files if dependencies exist
+        if !HAS_DEPENDENCIES! EQU 1 (
+            if not exist "!DEP_DIR!" (
+                mkdir "!DEP_DIR!"
+            )
+            
+            for %%F in (!MODULE_DIR!\*.dll) do (
+                if /I not "%%~nxF"=="!MAIN_DLL!" (
+                    move "%%F" "!DEP_DIR!\"
+                )
             )
         )
         
@@ -62,7 +131,7 @@ echo:
 echo Build and copy completed for all projects.
 
 REM Copy to ModSharp directory if MOD_SHARP_DIR is set
-if "%MOD_SHARP_DIR_TEST_NOCOPY%"=="" (
+if "%MOD_SHARP_DIR%"=="" (
     echo MOD_SHARP_DIR environment variable is not set. Skipping ModSharp copy.
     echo To enable ModSharp copy, set MOD_SHARP_DIR environment variable to your ModSharp installation path.
 ) else (
