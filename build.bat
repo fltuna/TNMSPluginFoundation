@@ -1,10 +1,31 @@
 @echo off
 setlocal enabledelayedexpansion
-title Building TNMS Projects
+
+REM Parse command line arguments
+set PLATFORM=win-x64
+set PLATFORM_NAME=Windows
+if /I "%1"=="linux" (
+    set PLATFORM=linux-x64
+    set PLATFORM_NAME=Linux
+) else if /I "%1"=="windows" (
+    set PLATFORM=win-x64
+    set PLATFORM_NAME=Windows
+) else if not "%1"=="" (
+    echo Invalid platform: %1
+    echo Usage: build.bat [windows^|linux]
+    echo   windows - Build for Windows ^(default^)
+    echo   linux   - Build for Linux
+    exit /b 1
+)
+
+title Building TNMS Projects for %PLATFORM_NAME%
 rd ".build/gamedata" /S /Q
 rd ".build/modules" /S /Q
 rd ".build/shared" /S /Q
 cls
+
+echo Building TNMS Projects for %PLATFORM_NAME% (%PLATFORM%)
+echo:
 
 REM Define projects to build (add/remove projects as needed)
 set PROJECTS=TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example A0TnmsDependencyLoader
@@ -20,8 +41,8 @@ echo Building shared projects...
 for %%P in (%SHARED_PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers -c Release --no-dependencies
-        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
+        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release --no-dependencies
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
         
         echo Removing DLLs that already present in ModSharp from %%P...
         for %%D in (%DLLS_TO_REMOVE%) do (
@@ -65,8 +86,8 @@ echo Building main projects...
 for %%P in (%PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers -c Release --no-dependencies
-        dotnet publish %%P/%%P.csproj -f net9.0 -r win-x64 --disable-build-servers --no-self-contained -c Release --no-build --output ".build/modules/%%P"
+        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release --no-dependencies
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/modules/%%P"
         
         echo Removing DLLs that already present in ModSharp from %%P...
         for %%D in (%DLLS_TO_REMOVE%) do (
