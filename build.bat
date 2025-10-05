@@ -177,7 +177,13 @@ if "%MOD_SHARP_DIR%"=="" (
     echo Copying to ModSharp directory: %MOD_SHARP_DIR%
     
     echo Copying shared projects to ModSharp...
-    for %%P in (%SHARED_PROJECTS%) do (
+    for %%P in (%SHARED_PROJECTS_PHASE1%) do (
+        if exist ".build\shared\%%P\" (
+            echo Copying %%P to ModSharp shared directory...
+            xcopy ".build\shared\%%P\*" "%MOD_SHARP_DIR%\shared\%%P\" /E /I /Y
+        )
+    )
+    for %%P in (%SHARED_PROJECTS_PHASE2%) do (
         if exist ".build\shared\%%P\" (
             echo Copying %%P to ModSharp shared directory...
             xcopy ".build\shared\%%P\*" "%MOD_SHARP_DIR%\shared\%%P\" /E /I /Y

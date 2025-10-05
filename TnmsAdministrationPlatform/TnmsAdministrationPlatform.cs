@@ -10,6 +10,7 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform.Data;
+using TnmsAdministrationPlatform.Services;
 using TnmsAdministrationPlatform.Shared;
 using TnmsCentralizedDbPlatform.Shared;
 
@@ -17,13 +18,18 @@ namespace TnmsAdministrationPlatform;
 
 public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClientListener
 {
-    
     private readonly ILogger _logger;
     private readonly ISharedSystem _sharedSystem;
     
     private ITnmsCentralizedDbPlatform? _dbPlatform;
     private AdministrationDbContext? _dbContext;
     
+    private UserPermissionService? _userPermissionService;
+    private GroupPermissionService? _groupPermissionService;
+    private GroupRelationService? _groupRelationService;
+    private AdminGroupService? _adminGroupService;
+    private AdminUserService? _adminUserService;
+
     public TnmsAdministrationPlatform(ISharedSystem sharedSystem,
         string?                  dllPath,
         string?                  sharpPath,
@@ -44,7 +50,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     private readonly Dictionary<string, IAdminGroup> _groupPermissions = new();
     
     // TODO() Make this configurable
-    // private TnmsDatabaseProviderType _dbProviderType = TnmsDatabaseProviderType.Sqlite;
+    private TnmsDatabaseProviderType _dbProviderType = TnmsDatabaseProviderType.Sqlite;
 
     public int ListenerVersion => 1;
     public int ListenerPriority => 20;
@@ -55,7 +61,6 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     public bool Init()
     {
-        // TODO() Admin config loading
         _logger.LogInformation("Loaded TnmsAdministrationPlatform");
         _sharedSystem.GetClientManager().InstallClientListener(this);
         return true;
@@ -98,7 +103,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
 
             var dbParams = new DbConnectionParameters
             {
-                ProviderType = TnmsDatabaseProviderType.Sqlite,
+                ProviderType = _dbProviderType,
                 Host = "administration.db"
             };
 
@@ -111,6 +116,8 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
                 return false;
             }
 
+            InitializeServices();
+
             _logger.LogInformation("Database initialized successfully");
             return true;
         }
@@ -119,6 +126,29 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
             _logger.LogError(ex, "Failed to initialize database");
             return false;
         }
+    }
+
+    private void InitializeServices()
+    {
+        if (_dbContext == null)
+        {
+            _logger.LogError("Cannot initialize services without DbContext");
+            return;
+        }
+
+        var userPermissionRepo = new UserPermissionRepository(_dbContext);
+        var groupPermissionRepo = new GroupPermissionRepository(_dbContext);
+        var groupRelationRepo = new GroupRelationRepository(_dbContext);
+        var adminGroupRepo = new AdminGroupRepository(_dbContext);
+        var adminUserRepo = new AdminUserRepository(_dbContext);
+
+        _userPermissionService = new UserPermissionService(userPermissionRepo);
+        _groupPermissionService = new GroupPermissionService(groupPermissionRepo);
+        _groupRelationService = new GroupRelationService(groupRelationRepo);
+        _adminGroupService = new AdminGroupService(adminGroupRepo);
+        _adminUserService = new AdminUserService(adminUserRepo);
+
+        _logger.LogInformation("Services initialized successfully");
     }
 
     private bool ApplyDatabaseMigrations()
@@ -169,14 +199,155 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         // TODO() Load this from config
         return true;
     }
-    
-    public void OnClientConnected(IGameClient client)
+
+    private async Task LoadGroupCacheAsync()
     {
-        // TODO() Add permission loading feature from cached config or DB
-        if (!_userPermissions.ContainsKey(client.SteamId.AccountId))
+        try
         {
-            _userPermissions[client.SteamId.AccountId] = new AdminUser(client);
+            _logger.LogDebug("Loading groups into cache...");
+            
+            if (_adminGroupService == null || _groupPermissionService == null)
+            {
+                _logger.LogWarning("Required services not available for loading groups");
+                return;
+            }
+
+            _groupPermissions.Clear();
+
+            var allGroups = await _adminGroupService.GetAllAdminGroupsAsync();
+            
+            foreach (var dbGroup in allGroups)
+            {
+                var adminGroup = new AdminGroup(dbGroup.GroupName)
+                {
+                    Id = dbGroup.Id
+                };
+                
+                var globalPerms = await _groupPermissionService.GetGroupGlobalPermissionsAsync(dbGroup.Id);
+                foreach (var perm in globalPerms)
+                {
+                    adminGroup.Permissions.Add(perm.PermissionNode);
+                }
+                
+                var serverPerms = await _groupPermissionService.GetGroupServerPermissionsAsync(dbGroup.Id);
+                foreach (var perm in serverPerms)
+                {
+                    adminGroup.Permissions.Add($"{perm.PermissionNode}@{perm.ServerName}");
+                }
+
+                _groupPermissions[dbGroup.GroupName] = adminGroup;
+            }
+
+            _logger.LogDebug("Loaded {Count} groups into cache", _groupPermissions.Count);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load groups into cache");
+        }
+    }
+
+    private async Task EnsureUserExistsInDatabaseAsync(ulong steamId)
+    {
+        try
+        {
+            if (_adminUserService == null)
+            {
+                _logger.LogWarning("AdminUserService not available for ensuring user exists for {SteamId}", steamId);
+                return;
+            }
+
+            var existingUser = await _adminUserService.GetAdminUserAsync(steamId);
+            if (existingUser == null)
+            {
+                await _adminUserService.CreateOrUpdateAdminUserAsync(steamId, immunity: 0);
+                _logger.LogDebug("Created new admin user record for {SteamId}", steamId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to ensure user exists in database for {SteamId}", steamId);
+        }
+    }
+
+    private async Task<AdminUser> LoadUserDataFromDatabaseAsync(ulong steamId, IGameClient client)
+    {
+        var adminUser = new AdminUser(client);
+        
+        try
+        {
+            if (_userPermissionService == null || _groupRelationService == null)
+            {
+                _logger.LogWarning("Required services not available for loading user data for {SteamId}", steamId);
+                return adminUser;
+            }
+
+            var globalPermissions = await _userPermissionService.GetUserGlobalPermissionsAsync(steamId);
+            foreach (var perm in globalPermissions)
+            {
+                adminUser.Permissions.Add(perm.PermissionNode);
+            }
+
+            var serverPermissions = await _userPermissionService.GetUserServerPermissionsAsync(steamId);
+            foreach (var perm in serverPermissions)
+            {
+                adminUser.Permissions.Add($"{perm.PermissionNode}@{perm.ServerName}");
+            }
+
+            var userGroups = await _groupRelationService.GetUserGroupsAsync(steamId);
+            foreach (var groupRelation in userGroups)
+            {
+                var cachedGroup = _groupPermissions.Values
+                    .FirstOrDefault(g => g is AdminGroup ag && ag.Id == groupRelation.GroupId);
+                
+                if (cachedGroup != null)
+                {
+                    adminUser.Groups.Add(cachedGroup);
+                }
+            }
+
+            _logger.LogDebug("Loaded user data for {SteamId}: {PermissionCount} permissions, {GroupCount} groups", 
+                steamId, adminUser.Permissions.Count, adminUser.Groups.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load user data from database for {SteamId}", steamId);
+        }
+
+        return adminUser;
+    }
+
+    public void OnClientPostAdminCheck(IGameClient client)
+    {
+        _logger.LogError("post admin check for {SteamId} ({PlayerName})", client.SteamId.AccountId, client.Name);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (_userPermissions.ContainsKey(client.SteamId.AccountId))
+                {
+                    return;
+                }
+
+                if (!_groupPermissions.Any())
+                {
+                    await LoadGroupCacheAsync();
+                }
+
+                await EnsureUserExistsInDatabaseAsync(client.SteamId.AccountId);
+
+                var adminUser = await LoadUserDataFromDatabaseAsync(client.SteamId.AccountId, client);
+                _userPermissions[client.SteamId.AccountId] = adminUser;
+
+                _logger.LogInformation(
+                    "Loaded admin data for user {SteamId} ({PlayerName}): {PermissionCount} permissions, {GroupCount} groups",
+                    client.SteamId.AccountId, client.Name, adminUser.Permissions.Count, adminUser.Groups.Count);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error loading admin data for user {SteamId} ({PlayerName})",
+                    client.SteamId.AccountId, client.Name);
+            }
+        });
     }
 
     public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
@@ -259,30 +430,222 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         return false;
     }
 
-    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission)
+    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission, string? serverName = null)
     {
-        return _userPermissions[client.SteamId.AccountId].Permissions.Add(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        var steamId = client.SteamId.AccountId;
+        
+        if (serverName == null)
+        {
+            var success = _userPermissions[steamId].Permissions.Add(permission);
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_userPermissionService != null)
+                        {
+                            await _userPermissionService.AddGlobalPermissionAsync(steamId, permission);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to persist global permission {Permission} for user {SteamId}", permission, steamId);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        }
+        else
+        {
+            var success = _userPermissions[steamId].Permissions.Add($"{permission}@{serverName}");
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_userPermissionService != null)
+                        {
+                            await _userPermissionService.AddServerPermissionAsync(steamId, permission, serverName);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to persist server permission {Permission} for user {SteamId} on server {ServerName}", permission, steamId, serverName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        }
     }
 
-    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission)
+    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission, string? serverName = null)
     {
-        return _userPermissions[client.SteamId.AccountId].Permissions.Remove(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        var steamId = client.SteamId.AccountId;
+        
+        if (serverName == null)
+        {
+            var success = _userPermissions[steamId].Permissions.Remove(permission);
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_userPermissionService != null)
+                        {
+                            await _userPermissionService.RemoveGlobalPermissionAsync(steamId, permission);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove global permission {Permission} for user {SteamId}", permission, steamId);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        }
+        else
+        {
+            var success = _userPermissions[steamId].Permissions.Remove($"{permission}@{serverName}");
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_userPermissionService != null)
+                        {
+                            await _userPermissionService.RemoveServerPermissionAsync(steamId, permission, serverName);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove server permission {Permission} for user {SteamId} on server {ServerName}", permission, steamId, serverName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        }
     }
 
-    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission)
+    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission, string? serverName = null)
     {
         if (!_groupPermissions.TryGetValue(groupName, out var group))
             return PermissionSaveResult.GroupNotFound;
         
-        return group.Permissions.Add(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        if (serverName == null)
+        {
+            var success = group.Permissions.Add(permission);
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_adminGroupService != null && _groupPermissionService != null)
+                        {
+                            var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                            {
+                                if (dbGroup != null)
+                                    await _groupPermissionService.AddGlobalPermissionAsync(dbGroup.Id, permission);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to persist global permission {Permission} for group {GroupName}", permission, groupName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        }
+        else
+        {
+            var success = group.Permissions.Add($"{permission}@{serverName}");
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_adminGroupService != null && _groupPermissionService != null)
+                        {
+                            var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                            if (dbGroup != null)
+                            {
+                                await _groupPermissionService.AddServerPermissionAsync(dbGroup.Id, permission, serverName);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to persist server permission {Permission} for group {GroupName} on server {ServerName}", permission, groupName, serverName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDuplicatePermission;
+        }
     }
 
-    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission)
+    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission, string? serverName = null)
     {
         if (!_groupPermissions.TryGetValue(groupName, out var group))
             return PermissionSaveResult.GroupNotFound;
         
-        return group.Permissions.Remove(permission) ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        if (serverName == null)
+        {
+            var success = group.Permissions.Remove(permission);
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_adminGroupService != null && _groupPermissionService != null)
+                        {
+                            var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                            if (dbGroup != null)
+                            {
+                                await _groupPermissionService.RemoveGlobalPermissionAsync(dbGroup.Id, permission);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove global permission {Permission} for group {GroupName}", permission, groupName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        }
+        else
+        {
+            var success = group.Permissions.Remove($"{permission}@{serverName}");
+            if (success)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_adminGroupService != null && _groupPermissionService != null)
+                        {
+                            var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                            if (dbGroup != null)
+                            {
+                                await _groupPermissionService.RemoveServerPermissionAsync(dbGroup.Id, permission, serverName);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove server permission {Permission} for group {GroupName} on server {ServerName}", permission, groupName, serverName);
+                    }
+                });
+            }
+            return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureDontHavePermission;
+        }
     }
 
     public PermissionSaveResult AddClientToGroup(IGameClient client, string groupName)
@@ -290,7 +653,32 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         if (!_groupPermissions.TryGetValue(groupName, out var group))
             return PermissionSaveResult.GroupNotFound;
         
-        return _userPermissions[client.SteamId.AccountId].Groups.Add(group) ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientAlreadyInGroup;
+        var adminUser = _userPermissions[client.SteamId.AccountId];
+        var success = adminUser.Groups.Add(group);
+        
+        if (success)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (_adminGroupService != null && _groupRelationService != null)
+                    {
+                        var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                        if (dbGroup != null)
+                        {
+                            await _groupRelationService.AddUserToGroupAsync(client.SteamId.AccountId, dbGroup.Id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to persist group relation for user {SteamId} to group {GroupName}", client.SteamId.AccountId, groupName);
+                }
+            });
+        }
+        
+        return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientAlreadyInGroup;
     }
 
     public PermissionSaveResult RemoveClientFromGroup(IGameClient client, string groupName)
@@ -298,11 +686,66 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         if (!_groupPermissions.TryGetValue(groupName, out var group))
             return PermissionSaveResult.GroupNotFound;
         
-        return _userPermissions[client.SteamId.AccountId].Groups.Remove(group) ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientDontHaveGroup;
+        var adminUser = _userPermissions[client.SteamId.AccountId];
+        var success = adminUser.Groups.Remove(group);
+        
+        if (success)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (_adminGroupService != null && _groupRelationService != null)
+                    {
+                        var dbGroup = await _adminGroupService.GetAdminGroupByNameAsync(groupName);
+                        if (dbGroup != null)
+                        {
+                            await _groupRelationService.RemoveUserFromGroupAsync(client.SteamId.AccountId, dbGroup.Id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to remove group relation for user {SteamId} from group {GroupName}", client.SteamId.AccountId, groupName);
+                }
+            });
+        }
+        
+        return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientDontHaveGroup;
     }
 
     public IAdminUser GetAdminInformation(IGameClient client)
     {
         return _userPermissions[client.SteamId.AccountId];
+    }
+
+    public byte GetClientImmunity(IGameClient client)
+    {
+        var adminUser = _userPermissions[client.SteamId.AccountId];
+        return adminUser.Immunity;
+    }
+
+    public PermissionSaveResult SetClientImmunity(IGameClient client, byte immunity)
+    {
+        var steamId = client.SteamId.AccountId;
+        var adminUser = _userPermissions[steamId];
+        adminUser.Immunity = immunity;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (_adminUserService != null)
+                {
+                    await _adminUserService.CreateOrUpdateAdminUserAsync(steamId, immunity);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to persist immunity {Immunity} for user {SteamId}", immunity, steamId);
+            }
+        });
+
+        return PermissionSaveResult.Success;
     }
 }

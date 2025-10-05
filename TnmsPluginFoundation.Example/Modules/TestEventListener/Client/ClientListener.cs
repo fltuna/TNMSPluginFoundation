@@ -25,12 +25,6 @@ public class ClientListener(IServiceProvider provider): IClientListener
         return ECommandAction.Skipped;
     }
 
-    public bool OnClientPreAdminCheck(IGameClient client)
-    {
-        _plugin.Logger.LogInformation("I WONDER ADMIN SYSTEM EXISTS |||| PRE ADMIN CHECK: {client}", client.Name);
-        return true;
-    }
-
     public void OnClientPutInServer(IGameClient client)
     {
         _plugin.Logger.LogInformation("CLIENT PUT IN: {client}", client.Name);

@@ -24,53 +24,56 @@ public interface IAdminManager
     /// <param name="target"></param>
     /// <returns></returns>
     public bool ClientCanTarget(IGameClient? executor, IGameClient target);
-    
+
     /// <summary>
-    /// Add permission to client
+    /// Add permission to client for specific server or globally
     /// </summary>
     /// <param name="client">Client to check</param>
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
+    /// <param name="serverName">Server name for server-specific permission, null for global permission</param>
     /// <returns>
     /// Success if permission was added to client <br/>
     /// FailureDuplicatePermission if client already had permission <br/>
     /// </returns>
-    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission);
-    
-    
+    public PermissionSaveResult AddPermissionToClient(IGameClient client, string permission, string? serverName = null);
+
     /// <summary>
-    /// Remove permission from client
+    /// Remove permission from client for specific server or globally
     /// </summary>
     /// <param name="client">Client to check</param>
     /// <param name="permission">Permission node, e.g. tnms.permisson.node</param>
+    /// <param name="serverName">Server name for server-specific permission, null for global permission</param>
     /// <returns>
     /// Success if permission was removed from client <br/>
     /// FailureDontHavePermission if client did not have permission <br/>
     /// </returns>
-    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission);
+    public PermissionSaveResult RemovePermissionFromClient(IGameClient client, string permission, string? serverName = null);
     
     /// <summary>
-    /// Add permission to group
+    /// Add permission to group for specific server or globally
     /// </summary>
     /// <param name="groupName"></param>
     /// <param name="permission"></param>
+    /// <param name="serverName">Server name for server-specific permission, null for global permission</param>
     /// <returns>
     /// GroupNotFound if no group matches with groupName <br/>
     /// Success if permission was added to group <br/>
     /// FailureDuplicatePermission if group already had permission <br/>
     /// </returns>
-    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission);
+    public PermissionSaveResult AddPermissionToGroup(string groupName, string permission, string? serverName = null);
     
     /// <summary>
-    /// Remove permission from group
+    /// Remove permission from group for specific server or globally
     /// </summary>
     /// <param name="groupName"></param>
     /// <param name="permission"></param>
+    /// <param name="serverName">Server name for server-specific permission, null for global permission</param>
     /// <returns>
     /// GroupNotFound if no group matches with groupName <br/>
     /// Success if permission was removed from group <br/>
     /// FailureDontHavePermission if group did not have permission <br/>
     /// </returns>
-    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission);
+    public PermissionSaveResult RemovePermissionFromGroup(string groupName, string permission, string? serverName = null);
     
     /// <summary>
     /// Add client to admin group
@@ -79,7 +82,7 @@ public interface IAdminManager
     /// <param name="groupName"></param>
     /// <returns>
     /// GroupNotFound if no group matches with groupName <br/>
-    /// Success if client was removed from group <br/>
+    /// Success if client was added to group <br/>
     /// FailureClientAlreadyInGroup if client was already in group <br/>
     /// </returns>
     public PermissionSaveResult AddClientToGroup(IGameClient client, string groupName);
@@ -102,4 +105,22 @@ public interface IAdminManager
     /// <param name="client"></param>
     /// <returns></returns>
     public IAdminUser GetAdminInformation(IGameClient client);
+
+    /// <summary>
+    /// Get immunity level of specified client
+    /// </summary>
+    /// <param name="client">Client to get immunity from</param>
+    /// <returns>Immunity level (0-255)</returns>
+    public byte GetClientImmunity(IGameClient client);
+
+    /// <summary>
+    /// Set immunity level of specified client
+    /// </summary>
+    /// <param name="client">Client to set immunity for</param>
+    /// <param name="immunity">Immunity level (0-255)</param>
+    /// <returns>
+    /// Success if immunity was set successfully <br/>
+    /// FailureGeneral if there was an error setting immunity <br/>
+    /// </returns>
+    public PermissionSaveResult SetClientImmunity(IGameClient client, byte immunity);
 }
