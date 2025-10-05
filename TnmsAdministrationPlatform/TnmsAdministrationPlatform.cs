@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
+using TnmsAdministrationPlatform.Data;
 using TnmsAdministrationPlatform.Shared;
 using TnmsCentralizedDbPlatform.Shared;
 
@@ -17,6 +20,9 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     private readonly ILogger _logger;
     private readonly ISharedSystem _sharedSystem;
+    
+    private ITnmsCentralizedDbPlatform? _dbPlatform;
+    private AdministrationDbContext? _dbContext;
     
     public TnmsAdministrationPlatform(ISharedSystem sharedSystem,
         string?                  dllPath,
@@ -60,11 +66,108 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         _sharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this, IAdminManager.ModSharpModuleIdentity, (IAdminManager)this);
     }
 
+    public void OnAllModulesLoaded()
+    {
+        if (!InitializeDatabase())
+        {
+            _logger.LogError("Failed to initialize database in OnAllModulesLoaded. Plugin may not work correctly");
+        }
+    }
+
     public void Shutdown()
     {
         _userPermissions.Clear();
+        _dbContext?.Dispose();
         _sharedSystem.GetClientManager().RemoveClientListener(this);
         _logger.LogInformation("Unloaded TnmsAdministrationPlatform");
+    }
+    
+    private bool InitializeDatabase()
+    {
+        try
+        {
+            _dbPlatform = _sharedSystem.GetSharpModuleManager()
+                .GetRequiredSharpModuleInterface<ITnmsCentralizedDbPlatform>(
+                    ITnmsCentralizedDbPlatform.ModSharpModuleIdentity).Instance;
+
+            if (_dbPlatform == null)
+            {
+                _logger.LogWarning("TnmsCentralizedDbPlatform not found. Database features will be disabled.");
+                return false;
+            }
+
+            var dbParams = new DbConnectionParameters
+            {
+                ProviderType = TnmsDatabaseProviderType.Sqlite,
+                Host = "administration.db"
+            };
+
+            var options = _dbPlatform.ConfigureDbContext<AdministrationDbContext>(dbParams, "TnmsAdministrationPlatform");
+            _dbContext = new AdministrationDbContext(options.Options);
+            
+            if (!ApplyDatabaseMigrations())
+            {
+                _logger.LogError("Failed to apply database migrations");
+                return false;
+            }
+
+            _logger.LogInformation("Database initialized successfully");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to initialize database");
+            return false;
+        }
+    }
+
+    private bool ApplyDatabaseMigrations()
+    {
+        try
+        {
+            if (_dbContext == null)
+            {
+                _logger.LogError("DbContext is null");
+                return false;
+            }
+
+            var pendingMigrations = _dbContext.Database.GetPendingMigrations().ToList();
+            
+            if (pendingMigrations.Any())
+            {
+                _logger.LogInformation("Found {Count} pending migration(s): {Migrations}", 
+                    pendingMigrations.Count, string.Join(", ", pendingMigrations));
+
+                if (IsAutoMigrationEnabled())
+                {
+                    _logger.LogInformation("Auto-applying database migrations...");
+                    _dbContext.Database.Migrate();
+                    _logger.LogInformation("Database migrations applied successfully");
+                }
+                else
+                {
+                    _logger.LogWarning("Pending migrations detected but auto-migration is disabled.");
+                    _logger.LogWarning("Please run 'dotnet ef database update' manually to apply migrations.");
+                }
+            }
+            else
+            {
+                _logger.LogInformation("Database is up to date, no pending migrations");
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during migration process");
+            return false;
+        }
+    }
+
+    private bool IsAutoMigrationEnabled()
+    {
+        // TODO() Load this from config
+        return true;
     }
     
     public void OnClientConnected(IGameClient client)

@@ -46,7 +46,7 @@ public class AdministrationDbContext : DbContext
                   .IsUnique()
                   .HasDatabaseName("uk_user_perm_global");
             entity.HasIndex(e => e.UserSteamId)
-                  .HasDatabaseName("idx_user_steam_id");
+                  .HasDatabaseName("idx_user_perm_global_steam_id");
             
             entity.HasOne(e => e.User)
                   .WithMany(u => u.UserPermissionGlobals)
@@ -62,9 +62,9 @@ public class AdministrationDbContext : DbContext
                   .IsUnique()
                   .HasDatabaseName("uk_user_perm_server");
             entity.HasIndex(e => e.UserSteamId)
-                  .HasDatabaseName("idx_user_steam_id");
+                  .HasDatabaseName("idx_user_perm_server_steam_id");
             entity.HasIndex(e => e.ServerName)
-                  .HasDatabaseName("idx_server_name");
+                  .HasDatabaseName("idx_user_perm_server_name");
             
             entity.HasOne(e => e.User)
                   .WithMany(u => u.UserPermissionServers)
@@ -95,9 +95,9 @@ public class AdministrationDbContext : DbContext
                   .IsUnique()
                   .HasDatabaseName("uk_group_user");
             entity.HasIndex(e => e.UserSteamId)
-                  .HasDatabaseName("idx_user_steam_id");
+                  .HasDatabaseName("idx_group_relation_steam_id");
             entity.HasIndex(e => e.GroupId)
-                  .HasDatabaseName("idx_group_id");
+                  .HasDatabaseName("idx_group_relation_group_id");
             
             entity.HasOne(e => e.Group)
                   .WithMany(g => g.GroupRelations)
@@ -118,7 +118,7 @@ public class AdministrationDbContext : DbContext
                   .IsUnique()
                   .HasDatabaseName("uk_group_perm_global");
             entity.HasIndex(e => e.GroupId)
-                  .HasDatabaseName("idx_group_id");
+                  .HasDatabaseName("idx_group_perm_global_group_id");
             
             entity.HasOne(e => e.Group)
                   .WithMany(g => g.GroupPermissionGlobals)
@@ -134,9 +134,9 @@ public class AdministrationDbContext : DbContext
                   .IsUnique()
                   .HasDatabaseName("uk_group_perm_server");
             entity.HasIndex(e => e.GroupId)
-                  .HasDatabaseName("idx_group_id");
+                  .HasDatabaseName("idx_group_perm_server_group_id");
             entity.HasIndex(e => e.ServerName)
-                  .HasDatabaseName("idx_server_name");
+                  .HasDatabaseName("idx_group_perm_server_name");
             
             entity.HasOne(e => e.Group)
                   .WithMany(g => g.GroupPermissionServers)

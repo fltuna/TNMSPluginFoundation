@@ -67,12 +67,6 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     {
         Instance = this;
         
-        if (!InitializeDatabase())
-        {
-            Logger.LogError("Failed to initialize database. TnmsLocalizationPlatform initialization failed.");
-            return false;
-        }
-
         Logger.LogInformation("TnmsLocalizationPlatform initialized");
         return true;
     }
@@ -82,6 +76,14 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
         SharedSystem.GetSharpModuleManager().RegisterSharpModuleInterface(this,
             ITnmsLocalizationPlatform.ModSharpModuleIdentity, (ITnmsLocalizationPlatform)this);
         SharedSystem.GetClientManager().InstallClientListener(this);
+    }
+
+    public void OnAllModulesLoaded()
+    {
+        if (!InitializeDatabase())
+        {
+            Logger.LogError("Failed to initialize database in OnAllModulesLoaded. Database features will be disabled.");
+        }
     }
 
     public void Shutdown()

@@ -124,7 +124,7 @@ namespace TnmsAdministrationPlatform.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId")
-                        .HasDatabaseName("idx_group_id");
+                        .HasDatabaseName("idx_group_perm_global_group_id");
 
                     b.HasIndex("GroupId", "PermissionNode")
                         .IsUnique()
@@ -163,10 +163,10 @@ namespace TnmsAdministrationPlatform.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId")
-                        .HasDatabaseName("idx_group_id");
+                        .HasDatabaseName("idx_group_perm_server_group_id");
 
                     b.HasIndex("ServerName")
-                        .HasDatabaseName("idx_server_name");
+                        .HasDatabaseName("idx_group_perm_server_name");
 
                     b.HasIndex("GroupId", "PermissionNode", "ServerName")
                         .IsUnique()
@@ -197,10 +197,10 @@ namespace TnmsAdministrationPlatform.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId")
-                        .HasDatabaseName("idx_group_id");
+                        .HasDatabaseName("idx_group_relation_group_id");
 
                     b.HasIndex("UserSteamId")
-                        .HasDatabaseName("idx_user_steam_id");
+                        .HasDatabaseName("idx_group_relation_steam_id");
 
                     b.HasIndex("GroupId", "UserSteamId")
                         .IsUnique()
@@ -233,7 +233,7 @@ namespace TnmsAdministrationPlatform.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserSteamId")
-                        .HasDatabaseName("idx_user_steam_id");
+                        .HasDatabaseName("idx_user_perm_global_steam_id");
 
                     b.HasIndex("UserSteamId", "PermissionNode")
                         .IsUnique()
@@ -272,10 +272,10 @@ namespace TnmsAdministrationPlatform.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ServerName")
-                        .HasDatabaseName("idx_server_name");
+                        .HasDatabaseName("idx_user_perm_server_name");
 
                     b.HasIndex("UserSteamId")
-                        .HasDatabaseName("idx_user_steam_id");
+                        .HasDatabaseName("idx_user_perm_server_steam_id");
 
                     b.HasIndex("UserSteamId", "PermissionNode", "ServerName")
                         .IsUnique()
