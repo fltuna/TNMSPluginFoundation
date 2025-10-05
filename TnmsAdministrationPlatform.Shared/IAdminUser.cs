@@ -1,6 +1,7 @@
-﻿using Sharp.Shared.Objects;
+﻿using System.Collections.Generic;
+using Sharp.Shared.Objects;
 
-namespace TnmsAdministrationPlatform;
+namespace TnmsAdministrationPlatform.Shared;
 
 public interface IAdminUser
 {

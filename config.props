@@ -1,5 +1,51 @@
 <Project>
     <PropertyGroup>
         <Version>0.0.1</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Copyright>© 2025 faketuna</Copyright>
+        <PlatformTarget>x64</PlatformTarget>
+        <RepositoryUrl>https://github.com/fltuna/TNMSPluginFoundation</RepositoryUrl>
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>13</LangVersion>
+        <ImplicitUsings>false</ImplicitUsings>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
+
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <BuildDateTime>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss"))</BuildDateTime>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="obj\**" />
+        <EmbeddedResource Remove="obj\**" />
+        <None Remove="obj\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+            <_Parameter1>BuildTime</_Parameter1>
+            <_Parameter2>$(BuildDateTime)</_Parameter2>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
+        <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
+        <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll" DestinationFolder="$(MOD_SHARP_DIR)\modules\$(ProjectName)\reload" />
+        <Message Text="Successfully copied the plugin files" Importance="High" />
+    </Target>
 </Project>

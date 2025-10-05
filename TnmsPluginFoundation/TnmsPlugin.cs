@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
@@ -6,6 +10,7 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform;
+using TnmsAdministrationPlatform.Shared;
 using TnmsExtendableTargeting.Shared;
 using TnmsLocalizationPlatform.Shared;
 using TnmsPluginFoundation.Interfaces;

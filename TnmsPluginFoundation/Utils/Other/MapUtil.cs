@@ -1,4 +1,6 @@
-﻿namespace TnmsPluginFoundation.Utils.Other;
+﻿using System.Collections.Generic;
+
+namespace TnmsPluginFoundation.Utils.Other;
 
 /// <summary>
 /// 

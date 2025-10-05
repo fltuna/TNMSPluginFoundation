@@ -1,4 +1,6 @@
-﻿namespace TnmsAdministrationPlatform;
+﻿using System.Collections.Generic;
+
+namespace TnmsAdministrationPlatform.Shared;
 
 public interface IAdminGroup
 {

@@ -1,4 +1,8 @@
-﻿namespace TnmsCentralizedDbPlatform.Shared;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace TnmsCentralizedDbPlatform.Shared;
 
 public interface ITnmsRepository<T> where T : class
 {

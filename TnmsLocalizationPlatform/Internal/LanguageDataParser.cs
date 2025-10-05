@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 namespace TnmsLocalizationPlatform.Internal;
 
@@ -29,7 +32,7 @@ public class LanguageDataParser(string languageDataDir)
                     translations[fileName] = languageData;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Ignore invalid files
             }

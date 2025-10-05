@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
+        <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" ExcludeAssets="runtime" />
         <ProjectReference Include="..\TnmsPluginFoundation\TnmsPluginFoundation.csproj" Private="false" ExcludeAssets="runtime"/>
     </ItemGroup>
 

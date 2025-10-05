@@ -1,6 +1,6 @@
 ﻿using Sharp.Shared.Objects;
 
-namespace TnmsAdministrationPlatform;
+namespace TnmsAdministrationPlatform.Shared;
 
 public interface IAdminManager
 {

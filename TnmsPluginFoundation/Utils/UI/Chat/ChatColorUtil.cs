@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Sharp.Shared.Definition;
 
 namespace TnmsPluginFoundation.Utils.UI.Chat;

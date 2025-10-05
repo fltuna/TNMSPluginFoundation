@@ -11,6 +11,7 @@ public class ConVarTracking(IServiceProvider serviceProvider, bool hotReload) : 
     protected override void OnInitialize()
     {
         CreateAndTrackConVar("ms_test_cvar", "0", "Test ConVar");
+        SharedSystem.GetModSharp().LogMessage("HotReload: " + hotReload);
     }
 
     protected override void OnAllModulesLoaded()

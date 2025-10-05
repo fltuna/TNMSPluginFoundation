@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    
+    <Import Project="..\config.props" />
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RootNamespace>TnmsDependencyLoader</RootNamespace>
     </PropertyGroup>
 
@@ -11,11 +10,5 @@
         <PackageReference Include="McMaster.NETCore.Plugins" Version="2.0.0" />
         <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" />
     </ItemGroup>
-
-    <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">
-        <Message Text="Copying the plugin files to ModSharp modules directory" Importance="High" />
-        <Copy SourceFiles="$(TargetDir)$(ProjectName).deps.json;$(TargetDir)$(ProjectName).dll;$(TargetDir)$(ProjectName).pdb" DestinationFolder="$(MOD_SHARP_DIR)\modules\$(ProjectName)\reload" />
-        <Message Text="Successfully copied the plugin files" Importance="High" />
-    </Target>
 
 </Project>

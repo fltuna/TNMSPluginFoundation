@@ -1,4 +1,5 @@
-﻿using Sharp.Shared.Objects;
+﻿using System.Collections.Generic;
+using Sharp.Shared.Objects;
 
 namespace TnmsExtendableTargeting.Shared;
 

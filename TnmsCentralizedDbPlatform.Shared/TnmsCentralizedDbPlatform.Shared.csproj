@@ -1,13 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+    
+    <Import Project="..\config.props" />   
     
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" ExcludeAssets="runtime"/>
     </ItemGroup>
 
     <Target Name="CopyPlugin" AfterTargets="Build" Condition="'$(MOD_SHARP_DIR)' != ''">

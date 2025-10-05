@@ -1,4 +1,6 @@
-﻿using Sharp.Shared.Objects;
+﻿using System.Collections.Generic;
+using Sharp.Shared.Objects;
+using TnmsAdministrationPlatform.Shared;
 
 namespace TnmsAdministrationPlatform;
 

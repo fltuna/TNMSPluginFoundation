@@ -1,4 +1,6 @@
-﻿namespace TnmsPluginFoundation.Models.Command;
+﻿using System;
+
+namespace TnmsPluginFoundation.Models.Command;
 
 [Flags]
 public enum TnmsCommandRegistrationType
