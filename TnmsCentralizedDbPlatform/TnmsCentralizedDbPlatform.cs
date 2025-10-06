@@ -37,7 +37,7 @@ public class TnmsCentralizedDbPlatform : IModSharpModule, ITnmsCentralizedDbPlat
     
     public bool Init()
     {
-        _logger.LogInformation("Loaded TnmsCentralizedDbPlatform");
+        _logger.LogInformation("TnmsCentralizedDbPlatform initialized");
         return true;
     }
 
@@ -48,7 +48,7 @@ public class TnmsCentralizedDbPlatform : IModSharpModule, ITnmsCentralizedDbPlat
 
     public void Shutdown()
     {
-        _logger.LogInformation("Unloaded TnmsCentralizedDbPlatform");
+        _logger.LogInformation("TnmsCentralizedDbPlatform shutdown");
     }
 
     public DbContextOptionsBuilder<TContext> ConfigureDbContext<TContext>(

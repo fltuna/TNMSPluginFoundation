@@ -82,7 +82,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     {
         if (!InitializeDatabase())
         {
-            Logger.LogError("Failed to initialize database in OnAllModulesLoaded. Database features will be disabled.");
+            Logger.LogError("Failed to initialize database in OnAllModulesLoaded. and this plugin will not work.");
         }
     }
 

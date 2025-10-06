@@ -61,8 +61,8 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     
     public bool Init()
     {
-        _logger.LogInformation("Loaded TnmsAdministrationPlatform");
         _sharedSystem.GetClientManager().InstallClientListener(this);
+        _logger.LogInformation("TnmsAdministrationPlatform initialized");
         return true;
     }
 
@@ -84,7 +84,7 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         _userPermissions.Clear();
         _dbContext?.Dispose();
         _sharedSystem.GetClientManager().RemoveClientListener(this);
-        _logger.LogInformation("Unloaded TnmsAdministrationPlatform");
+        _logger.LogInformation("TnmsAdministrationPlatform shutdown");
     }
     
     private bool InitializeDatabase()
