@@ -379,6 +379,9 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         
         bool targetIsAdmin = VerifyPermission(targetInfo, IAdminManager.AdminPermissionNode);
         bool targetIsRoot = VerifyPermission(targetInfo, IAdminManager.RootPermissionWildCard);
+        
+        if (!executorIsAdmin && !targetIsAdmin)
+            return true;
 
         if (targetIsAdmin && !executorIsAdmin)
             return false;
