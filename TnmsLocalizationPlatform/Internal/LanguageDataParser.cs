@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using TnmsLocalizationPlatform.Util;
 
 namespace TnmsLocalizationPlatform.Internal;
 
@@ -29,6 +30,11 @@ public class LanguageDataParser(string languageDataDir)
                 
                 if (languageData != null)
                 {
+                    foreach (var (key, value) in languageData)
+                    {
+                        languageData[key] = ChatColorUtil.FormatChatMessage(value);
+                    }
+
                     translations[fileName] = languageData;
                 }
             }

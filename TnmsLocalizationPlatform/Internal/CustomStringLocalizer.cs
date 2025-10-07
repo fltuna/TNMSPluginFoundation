@@ -1,11 +1,9 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Localization;
 using Sharp.Shared.Objects;
 using TnmsLocalizationPlatform.Shared;
-using TnmsLocalizationPlatform.Util;
 
 namespace TnmsLocalizationPlatform.Internal;
 
@@ -29,7 +27,7 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
             
             var value = translation.GetValueOrDefault(name, name);
-            return new LocalizedString(name, ChatColorUtil.FormatChatMessage(value), !_translations.ContainsKey(name));
+            return new LocalizedString(name, value, !_translations.ContainsKey(name));
         }
     }
 
@@ -43,8 +41,9 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
             var format = translation.GetValueOrDefault(name, name);
         
-            format = ChatColorUtil.FormatChatMessage(format);
-            var value = string.Format(format, arguments);
+            var value = arguments.Length == 0
+                ? format 
+                : string.Format(format, arguments);
             return new LocalizedString(name, value, !_translations.ContainsKey(name));
         }
     }
@@ -62,7 +61,7 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             else
             {
                 var rawValue = translation.GetValueOrDefault(name, name);
-                value = new LocalizedString(name, ChatColorUtil.FormatChatMessage(rawValue), !_translations.ContainsKey(name));
+                value = new LocalizedString(name, rawValue, !_translations.ContainsKey(name));
             }
             return value;
         }
@@ -78,8 +77,9 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
         
             var format = translation.GetValueOrDefault(name, name);
-            format = ChatColorUtil.FormatChatMessage(format);
-            var value = string.Format(format, arguments);
+            var value = arguments.Length == 0 
+                ? format 
+                : string.Format(format, arguments);
             return new LocalizedString(name, value, !_translations.ContainsKey(name));
         }
     }
@@ -90,6 +90,33 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             return culture;
 
         return TnmsLocalizationPlatform.Instance.ServerDefaultCulture;
+    }
+
+    public LocalizedString ForClient(IGameClient client, string name)
+    {
+        string format;
+        
+        if (!TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
+        {
+            if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
+            {
+                translation = _translations.First().Value;
+            }
+            format = translation.GetValueOrDefault(name, name);
+        }
+        else
+        {
+            if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
+            {
+                if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
+                {
+                    translation = _translations.First().Value;
+                }
+            }
+            format = translation.GetValueOrDefault(name, name);
+        }
+        
+        return new LocalizedString(name, format, !_translations.ContainsKey(name));
     }
 
     public LocalizedString ForClient(IGameClient client, string name, params object[] arguments)
@@ -116,8 +143,9 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             format = translation.GetValueOrDefault(name, name);
         }
         
-        format = ChatColorUtil.FormatChatMessage(format);
-        var value = string.Format(format, arguments);
+        var value = arguments.Length == 0
+            ? format :
+            string.Format(format, arguments);
         return new LocalizedString(name, value, !_translations.ContainsKey(name));
     }
 

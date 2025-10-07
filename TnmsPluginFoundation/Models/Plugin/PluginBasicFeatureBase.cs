@@ -44,6 +44,20 @@ public abstract class PluginBasicFeatureBase(IServiceProvider serviceProvider)
     /// </summary>
     /// <param name="player">Player instance, If null it will use server language</param>
     /// <param name="localizationKey">Localization Key</param>
+    /// <returns>Translated result</returns>
+    protected string LocalizeString(IGameClient? player, string localizationKey)
+    {
+        if (player == null)
+            return Plugin.LocalizeString(localizationKey);
+
+        return Plugin.LocalizeStringForPlayer(player, localizationKey);
+    }
+
+    /// <summary>
+    /// Simple wrapper method for AbstractTnmsPluginBase::LocalizeString()
+    /// </summary>
+    /// <param name="player">Player instance, If null it will use server language</param>
+    /// <param name="localizationKey">Localization Key</param>
     /// <param name="args">Any args that can be use ToString()</param>
     /// <returns>Translated result</returns>
     protected string LocalizeString(IGameClient? player, string localizationKey, params object[] args)

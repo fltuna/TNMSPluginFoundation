@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Sharp.Shared.Enums;
-using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 using TnmsPluginFoundation.Extensions.Client;
 using TnmsPluginFoundation.Interfaces;
@@ -158,6 +157,28 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
     /// </summary>
     /// <param name="localizationKey">Language localization key</param>
     /// <param name="args">Any args that can be use ToString()</param>
+    protected void PrintLocalizedChatToAllWithModulePrefix(string localizationKey)
+    {
+        
+        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients())
+        {
+            if (client.IsFakeClient || client.IsHltv)
+                continue;
+
+            var playerController = client.GetPlayerController();
+            
+            if (playerController == null)
+                continue;
+            
+            playerController.PrintToChat(GetTextWithModulePrefix(client, LocalizeString(client, localizationKey)));
+        }
+    }
+    
+    /// <summary>
+    /// Helper method for sending localized text with module prefix to all players.
+    /// </summary>
+    /// <param name="localizationKey">Language localization key</param>
+    /// <param name="args">Any args that can be use ToString()</param>
     protected void PrintLocalizedChatToAllWithModulePrefix(string localizationKey, params object[] args)
     {
         
@@ -181,11 +202,10 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
     /// </summary>
     /// <param name="player">Player instance, If null it will use server language</param>
     /// <param name="localizationKey">Language localization key</param>
-    /// <param name="args">Any args that can be use ToString()</param>
     /// <returns></returns>
-    protected string LocalizeWithModulePrefix(IGameClient? player, string localizationKey, params object[] args)
+    protected string LocalizeWithModulePrefix(IGameClient? player, string localizationKey)
     {
-        return GetTextWithModulePrefix(player, LocalizeString(player, localizationKey, args));
+        return GetTextWithModulePrefix(player, LocalizeString(player, localizationKey));
     }
     
     /// <summary>
@@ -200,5 +220,17 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
             return $"{ModuleChatPrefix} {text}";
 
         return $"{LocalizeString(player, ModuleChatPrefix)} {text}";
+    }
+
+    /// <summary>
+    /// Helper method for obtain the localized text.
+    /// </summary>
+    /// <param name="player">Player instance, If null it will use server language</param>
+    /// <param name="localizationKey">Language localization key</param>
+    /// <param name="args">Any args that can be use ToString()</param>
+    /// <returns></returns>
+    protected string LocalizeWithModulePrefix(IGameClient? player, string localizationKey, params object[] args)
+    {
+        return GetTextWithModulePrefix(player, LocalizeString(player, localizationKey, args));
     }
 }

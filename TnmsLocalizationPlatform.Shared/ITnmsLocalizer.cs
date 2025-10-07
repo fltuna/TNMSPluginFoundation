@@ -13,6 +13,8 @@ public interface ITnmsLocalizer: IStringLocalizer
     
     public CultureInfo GetClientCulture(IGameClient client);
     
+    public LocalizedString ForClient(IGameClient client, string name);
+    
     public LocalizedString ForClient(IGameClient client, string name, params object[] arguments);
     
     public IEnumerable<LocalizedString> GetAllStringsByCulture(CultureInfo culture);
