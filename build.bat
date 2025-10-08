@@ -18,6 +18,11 @@ if /I "%1"=="linux" (
     exit /b 1
 )
 
+set OVERRIDE_CUSTOMS=0
+if /I "%2"=="--override-custom-files" (
+    set OVERRIDE_CUSTOMS=1
+)
+
 title Building TNMS Projects for %PLATFORM_NAME%
 rd ".build/gamedata" /S /Q
 rd ".build/modules" /S /Q
@@ -106,6 +111,15 @@ for %%P in (%PROJECTS%) do (
             exit /b 1
         )
         
+        REM Remove module's PDB files
+        echo Removing PDB files for %%P...
+        for %%F in (%PROJECTS%) do (
+            if exist ".build\modules\%%P\%%F.pdb" (
+                del ".build\modules\%%P\%%F.pdb" /Q
+            )
+        )
+        
+        
         echo Removing DLLs that already present in ModSharp from %%P...
         for %%D in (%DLLS_TO_REMOVE%) do (
             if exist ".build\modules\%%P\%%D" (
@@ -113,16 +127,24 @@ for %%P in (%PROJECTS%) do (
             )
         )
         
-        REM Special handling for TnmsPluginFoundation.Example - remove shared DLLs
-        if "%%P"=="TnmsPluginFoundation.Example" (
-            echo Removing Shared DLLs from TnmsPluginFoundation.Example...
-            for %%S in (%SHARED_DLLS_TO_REMOVE%) do (
-                if exist ".build\modules\%%P\%%S" (
-                    echo Removing %%S from %%P
-                    del ".build\modules\%%P\%%S" /Q
-                )
+        REM remove shared TNMSPluginFoundation DLLs
+        echo Removing Shared DLLs...
+        for %%S in (%SHARED_DLLS_TO_REMOVE%) do (
+            if exist ".build\modules\%%P\%%S" (
+                echo Removing %%S from %%P
+                del ".build\modules\%%P\%%S" /Q
             )
         )
+        
+        REM remove shared TNMSPluginFoundation PDBs
+        echo Removing Shared PDBs...
+        for %%S in (%SHARED_PDB_TO_REMOVE%) do (
+            if exist ".build\modules\%%P\%%S" (
+                echo Removing %%S from %%P
+                del ".build\modules\%%P\%%S" /Q
+            )
+        )
+        
         
         REM Move all DLLs except the main plugin DLL to dependencies directory
         set MAIN_DLL=%%P.dll
@@ -152,9 +174,15 @@ for %%P in (%PROJECTS%) do (
         
         echo Renaming appsettings.json for %%P...
         if exist ".build\modules\%%P\appsettings.json" move ".build\modules\%%P\appsettings.json" ".build\modules\%%P\appsettings.example.json"
-                
-        echo Copying lang files for %%P...
-        if exist "%%P\lang\" xcopy "%%P\lang\*" ".build/modules/%%P/lang/" /E /I /Y
+        
+        REM Copy custom files that defined
+        for %%C in (%CUSTOM_DIRS%) do (
+            if exist "%%C\" (
+                echo Copying %%C files for %%P...
+                if exist "%%C\" xcopy "%%C\*" ".build/modules/%%P/%%C/" /E /I /Y
+            )
+        )
+        
         
         echo:
     ) else (
@@ -193,6 +221,16 @@ if "%MOD_SHARP_DIR%"=="" (
     echo Copying main projects to ModSharp...
     for %%P in (%PROJECTS%) do (
         if exist ".build\modules\%%P\" (
+        
+            if %OVERRIDE_CUSTOMS% EQU 0 (
+                echo Removing existing custom directories for %%P in ModSharp...
+                for %%C in (%CUSTOM_DIRS%) do (
+                    if exist ".build\modules\%%P\%%C\" (
+                        rd ".build\modules\%%P\%%C\" /S /Q
+                    )
+                )
+            )
+            
             echo Copying %%P to ModSharp modules directory...
             xcopy ".build\modules\%%P\*" "%MOD_SHARP_DIR%\modules\%%P\" /E /I /Y
         )
