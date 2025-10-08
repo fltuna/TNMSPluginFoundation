@@ -1,5 +1,8 @@
-﻿using Sharp.Shared;
+﻿using System;
+using Sharp.Shared;
+using Sharp.Shared.Definition;
 using Sharp.Shared.Enums;
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 
 namespace TnmsExtendableTargeting;
@@ -18,10 +21,38 @@ internal static class BuiltinTargeting
         return caller?.Slot != targetClient.Slot;
     }
 
-    internal static bool Aim(IGameClient targetClient, IGameClient? caller)
+    internal static IGameClient? Aim(IGameClient? caller)
     {
-        // TODO()
-        return false;
+        if (caller == null)
+            return null;
+        
+        var callerPawn = SharedSystem.GetEntityManager().FindPlayerPawnBySlot(caller.Slot);
+        
+        if (callerPawn == null)
+            return null;
+
+        var startPos = callerPawn.GetEyePosition();
+        var eyeAngle = callerPawn.GetEyeAngles();
+        var endPos = startPos + (eyeAngle.AnglesToVectorForward() * 2048);
+
+        var trace = SharedSystem.GetPhysicsQueryManager()
+            .TraceLine(startPos,
+                endPos,
+                UsefulInteractionLayers.FireBullets,
+                CollisionGroupType.Default,
+                TraceQueryFlag.All,
+                InteractionLayers.None,
+                callerPawn);
+        
+        if (trace.HitEntity?.AsPlayerPawn() is not {LifeState: LifeState.Alive} hitPawn)
+            return null;
+
+        var hitController = hitPawn.GetController();
+        
+        if (hitController == null)
+            return null;
+        
+        return SharedSystem.GetClientManager().GetGameClient(hitController.PlayerSlot);
     }
 
     

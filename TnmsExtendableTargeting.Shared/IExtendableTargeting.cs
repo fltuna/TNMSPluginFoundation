@@ -8,6 +8,13 @@ public interface IExtendableTargeting
     public const string ModSharpModuleIdentity = "TnmsExtendableTargeting";
     
     /// <summary>
+    /// Single target predication delegate <br/>
+    /// This is useful for single target that only requires 1 user like @aim (Because @aim is only checks caller's LOS) <br/>
+    /// </summary>
+    /// <param name="caller">The command executor. client or console. (this is useful for tracing client's ray when adding like @aim targeting)</param>
+    public delegate IGameClient? SingleTargetPredicateDelegate(IGameClient? caller);
+    
+    /// <summary>
     /// Target predication delegate
     /// </summary>
     /// <param name="targetClient">The target client for testing.</param>
@@ -22,20 +29,35 @@ public interface IExtendableTargeting
     /// <param name="caller">The command executor. client or console. (this is useful for tracing client's ray when adding like @aim targeting)</param>
     public delegate bool ParameterizedTargetPredicateDelegate(string param, IGameClient targetClient, IGameClient? caller);
     
-     // Register custom target
-     /// <summary>
-     /// Register custom targeting
-     /// </summary>
-     /// <param name="prefix">targeting prefix (e.g. @vip, @friends)</param>
-     /// <param name="predicate"></param>
-     public void RegisterCustomTarget(string prefix, IExtendableTargeting.TargetPredicateDelegate predicate);
+    // Register custom target
+    /// <summary>
+    /// Register custom single targeting
+    /// </summary>
+    /// <param name="prefix">targeting prefix (e.g. @vip, @friends)</param>
+    /// <param name="predicate"></param>
+    public void RegisterCustomSingleTarget(string prefix, IExtendableTargeting.SingleTargetPredicateDelegate predicate);
      
-     /// <summary>
-     /// Unregister custom target from extended targeting
-     /// </summary>
-     /// <param name="prefix">prefix of targeting</param>
-     /// <returns>true if deleted successfully, otherwise false</returns>
-     public bool UnregisterCustomTarget(string prefix);
+    /// <summary>
+    /// Unregister custom single target from extended targeting
+    /// </summary>
+    /// <param name="prefix">prefix of targeting</param>
+    /// <returns>true if deleted successfully, otherwise false</returns>
+    public bool UnregisterCustomSingleTarget(string prefix);
+    
+    // Register custom target
+    /// <summary>
+    /// Register custom targeting
+    /// </summary>
+    /// <param name="prefix">targeting prefix (e.g. @vip, @friends)</param>
+    /// <param name="predicate"></param>
+    public void RegisterCustomTarget(string prefix, IExtendableTargeting.TargetPredicateDelegate predicate);
+     
+    /// <summary>
+    /// Unregister custom target from extended targeting
+    /// </summary>
+    /// <param name="prefix">prefix of targeting</param>
+    /// <returns>true if deleted successfully, otherwise false</returns>
+    public bool UnregisterCustomTarget(string prefix);
      
      // Register parameterized target
      /// <summary>

@@ -57,7 +57,7 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
     {
         RegisterCustomTarget("@me", BuiltinTargeting.Me);
         RegisterCustomTarget("@!me", BuiltinTargeting.WithOutMe);
-        RegisterCustomTarget("@aim", BuiltinTargeting.Aim);
+        RegisterCustomSingleTarget("@aim", BuiltinTargeting.Aim);
         RegisterCustomTarget("@ct", BuiltinTargeting.Ct);
         RegisterCustomTarget("@t", BuiltinTargeting.Te);
         RegisterCustomTarget("@spec", BuiltinTargeting.Spectator);
@@ -85,11 +85,32 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
      
      // Custom target
      private readonly Dictionary<string, IExtendableTargeting.TargetPredicateDelegate> _customTargets = new(StringComparer.OrdinalIgnoreCase);
+     
+     // Custom single target
+     private readonly Dictionary<string, IExtendableTargeting.SingleTargetPredicateDelegate> _singleTargets = new(StringComparer.OrdinalIgnoreCase);
          
      // Parameterized target
      private readonly Dictionary<string, IExtendableTargeting.ParameterizedTargetPredicateDelegate> _paramTargets = new(StringComparer.OrdinalIgnoreCase);
 
-     
+
+     public void RegisterCustomSingleTarget(string prefix, IExtendableTargeting.SingleTargetPredicateDelegate predicate)
+     {
+         if (!prefix.StartsWith('@'))
+         {
+             prefix = '@' + prefix;
+         }
+         
+         if (CheckPrefixIsRegistered(prefix))
+                throw new ArgumentException("The specified prefix is already registered. please consider using another prefix");
+
+         _singleTargets.Add(prefix, predicate);
+     }
+
+     public bool UnregisterCustomSingleTarget(string prefix)
+     {
+         return _singleTargets.Remove(prefix);
+     }
+
      public void RegisterCustomTarget(string prefix, IExtendableTargeting.TargetPredicateDelegate predicate)
      {
          if (!prefix.StartsWith('@'))
@@ -97,8 +118,11 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
              prefix = '@' + prefix;
          }
 
-         if (!_customTargets.TryAdd(prefix, predicate))
+         
+         if (CheckPrefixIsRegistered(prefix))
              throw new ArgumentException("The specified prefix is already registered. please consider using another prefix");
+
+         _customTargets.TryAdd(prefix, predicate);
      }
 
      public bool UnregisterCustomTarget(string prefix)
@@ -112,7 +136,11 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
          {
              prefix = '@' + prefix;
          }
-         _paramTargets[prefix] = predicate;
+         
+         if (CheckPrefixIsRegistered(prefix))
+             throw new ArgumentException("The specified prefix is already registered. please consider using another prefix");
+
+         _paramTargets.TryAdd(prefix, predicate);
      }
 
      public bool UnregisterCustomParameterizedTarget(string prefix)
@@ -135,6 +163,16 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
              }
 
              foundTargets = players;
+             
+             return foundTargets.Any();
+         }
+         
+         if (_singleTargets.TryGetValue(targetString, out var singlePredicate))
+         {
+             foundTargets = new List<IGameClient>();
+             var target = singlePredicate(caller);
+             if (target != null)
+                 foundTargets.Add(target);
              
              return foundTargets.Any();
          }
@@ -189,5 +227,16 @@ public class ExtendableTargeting: IModSharpModule, IExtendableTargeting
          
          foundTargets = nameContainedPlayers;
          return foundTargets.Any();
+     }
+     
+     
+     private bool CheckPrefixIsRegistered(string prefix)
+     {
+         if (!prefix.StartsWith('@'))
+         {
+             prefix = '@' + prefix;
+         }
+
+         return _customTargets.ContainsKey(prefix) || _singleTargets.ContainsKey(prefix) || _paramTargets.ContainsKey(prefix);
      }
 }

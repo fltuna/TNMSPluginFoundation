@@ -28,7 +28,14 @@ public class TargetTestCommand(IServiceProvider provider) : TnmsAbstractCommandB
     {
         if (validatedArguments is null || client is null)
             return;
+
+        var clients = validatedArguments.GetArgument<List<IGameClient>>(1)!;
         
-        client.GetPlayerController()!.PrintToChat($"Found targets: {validatedArguments.GetArgument<List<IGameClient>>(1)?.Count}");
+        foreach (var gameClient in clients)
+        {
+            client.GetPlayerController()!.PrintToChat($"Found target: {gameClient.Name}");
+        }
+        
+        
     }
 }
