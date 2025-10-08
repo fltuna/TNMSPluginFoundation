@@ -103,8 +103,8 @@ public interface IAdminManager
     /// Get admin information associated with specified client
     /// </summary>
     /// <param name="client"></param>
-    /// <returns></returns>
-    public IAdminUser GetAdminInformation(IGameClient client);
+    /// <returns>Null, if client is bot or failed to fetch</returns>
+    public IAdminUser? GetAdminInformation(IGameClient client);
 
     /// <summary>
     /// Get immunity level of specified client

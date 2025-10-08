@@ -374,6 +374,9 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         var executorInfo = GetAdminInformation(executor);
         var targetInfo = GetAdminInformation(target);
         
+        if (executorInfo == null || targetInfo == null)
+            return true;
+        
         bool executorIsAdmin = VerifyPermission(executorInfo, IAdminManager.AdminPermissionNode);
         bool executorIsRoot = VerifyPermission(executorInfo, IAdminManager.RootPermissionWildCard);
         
@@ -716,9 +719,12 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         return success ? PermissionSaveResult.Success : PermissionSaveResult.FailureClientDontHaveGroup;
     }
 
-    public IAdminUser GetAdminInformation(IGameClient client)
+    public IAdminUser? GetAdminInformation(IGameClient client)
     {
-        return _userPermissions[client.SteamId.AccountId];
+        if (!_userPermissions.TryGetValue(client.SteamId.AccountId, out var user))
+            return null;
+        
+        return user;
     }
 
     public byte GetClientImmunity(IGameClient client)
