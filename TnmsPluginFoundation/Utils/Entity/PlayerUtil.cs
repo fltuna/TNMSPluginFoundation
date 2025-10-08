@@ -93,7 +93,6 @@ public static class PlayerUtil
         if (playerController == null)
             return ServerConsoleName;
         
-        // TODO() Maybe requires set state changed
         return playerController.PlayerName;
     }
 
@@ -109,7 +108,6 @@ public static class PlayerUtil
         if (playerController == null)
             return;
         
-        // TODO() Maybe requires set state changed
         playerController.SetName(playerName);
 
         // TODO() Is it required to implement Event to apply change immediately?
@@ -130,7 +128,6 @@ public static class PlayerUtil
         if (playerController == null)
             return;
         
-        // TODO() Maybe requires set state changed
         playerController.SetClanTag(playerClanTag);
         
         // TODO() Is it required to implement Event to apply change immediately?
@@ -254,9 +251,8 @@ public static class PlayerUtil
         if (playerPawn == null)
             return false;
         
-        // TODO() how to set buyzone status?
-        // playerPawn.InBuyZone = inBuyZone;
-        // playerPawn.NetworkStateChanged("m_bInBuyZone");
+        playerPawn.SetNetVar("m_bInBuyZone", inBuyZone);
+        playerPawn.NetworkStateChanged("m_bInBuyZone");
         return true;
     }
 
@@ -284,8 +280,6 @@ public static class PlayerUtil
         playerPawn.ProgressBarStartTime = currentTime;
         // TODO() is there a similar things in ModSharp?
         // pawn.BlockingUseActionInProgress = action;
-        
-        // TODO() Maybe requires set state changed
     }
 
     /// <summary>
@@ -300,7 +294,5 @@ public static class PlayerUtil
         
         playerPawn.ProgressBarDuration = 0;
         playerPawn.ProgressBarStartTime = 0.0f;
-        
-        // TODO() Maybe requires set state changed
     }
 }

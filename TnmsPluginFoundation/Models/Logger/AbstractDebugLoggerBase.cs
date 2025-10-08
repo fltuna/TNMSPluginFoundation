@@ -117,9 +117,8 @@ public abstract class AbstractDebugLoggerBase: IDebugLogger
                 if (client.IsFakeClient || client.IsHltv)
                     continue;
             
-                // TODO() Admin Management Feature
-                // if (!AdminManager.PlayerHasPermissions(client, RequiredFlagForPrintToConsole))
-                //     continue;
+                if (!TnmsPlugin.AdminManager.ClientHasPermission(client, RequiredFlagForPrintToConsole))
+                    continue;
 
                 client.ConsolePrint(msg);
             }

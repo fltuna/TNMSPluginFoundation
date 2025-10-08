@@ -4,6 +4,7 @@ using Sharp.Shared.Types;
 using TnmsPluginFoundation.Extensions.Client;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Command.Validators;
+using TnmsPluginFoundation.Utils.Entity;
 
 namespace TnmsPluginFoundation.Example.Modules.TargetingTest.Commands;
 
@@ -33,6 +34,7 @@ public class TargetTestCommand(IServiceProvider provider) : TnmsAbstractCommandB
         
         foreach (var gameClient in clients)
         {
+            GameRulesUtil.SetRoundTime(1500);
             client.GetPlayerController()!.PrintToChat($"Found target: {gameClient.Name}");
         }
         

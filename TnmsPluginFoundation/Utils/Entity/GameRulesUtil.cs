@@ -1,4 +1,5 @@
 ﻿using Sharp.Shared.Enums;
+using Sharp.Shared.Types;
 
 namespace TnmsPluginFoundation.Utils.Entity;
 
@@ -25,7 +26,6 @@ public class GameRulesUtil
     {
         var gameRules = EntityUtil.GetGameRules();
         gameRules.RoundTime = newRoundTime;
-        // TODO() Maybe requires set state changed
         return gameRules.RoundTime;
     }
 
@@ -51,10 +51,9 @@ public class GameRulesUtil
     /// <summary>
     /// Terminates current round
     /// </summary>
-    /// <returns>Returns true if terminate initiation success. Otherwise false</returns>
-    public static bool TerminateRound(float delay, RoundEndReason reason)
+    /// <returns></returns>
+    public static void TerminateRound(float delay, RoundEndReason reason, bool bypassHook = false, TeamRewardInfo[]? info = null)
     {
         EntityUtil.GetGameRules().TerminateRound(delay, reason);
-        return true;
     }
 }

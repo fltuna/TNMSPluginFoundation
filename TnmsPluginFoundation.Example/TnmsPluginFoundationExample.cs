@@ -7,6 +7,7 @@ using TnmsPluginFoundation.Example.Modules.PermissionTest;
 using TnmsPluginFoundation.Example.Modules.TargetingTest;
 using TnmsPluginFoundation.Example.Modules.TestCommand;
 using TnmsPluginFoundation.Example.Modules.TestEventListener;
+using TnmsPluginFoundation.Example.Modules.UtilitiyTest;
 
 namespace TnmsPluginFoundation.Example;
 
@@ -34,6 +35,7 @@ public class TnmsPluginFoundationExample(
         RegisterModule<TestEventListener>();
         RegisterModule<TnmsTargetingTest>();
         RegisterModule<LocalizationTest>();
+        RegisterModule<UtilitiyTest>();
         Logger.LogInformation("Hello from the TnmsPluginFoundation.Example at TnmsOnPluginLoad()");
     }
 

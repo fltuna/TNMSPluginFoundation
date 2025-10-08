@@ -29,9 +29,6 @@ public static class CsTeamUtil
             cmd = $"mp_teamname_2 {teamName}";
         }
 
-        // TODO() Maybe ↓ ?
-        // EntityUtil.GetTeam(CStrikeTeam.TE)!.GlobalName = teamName;
-        
         TnmsPlugin.StaticSharedSystem.GetModSharp().ServerCommand(cmd);
         return true;
     }
@@ -53,7 +50,6 @@ public static class CsTeamUtil
             return false;
         
         teamEntity.Score = score;
-        // TODO() Maybe requires set state changed
         return true;
     }
 
