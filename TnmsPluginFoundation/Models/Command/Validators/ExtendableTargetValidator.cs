@@ -8,7 +8,8 @@ namespace TnmsPluginFoundation.Models.Command.Validators;
 
 /// <summary>
 /// Extended targeting validator for TnmsAbstractCommandBase <br/>
-/// Find players by using ExtendedTargeting. This validator fails when if no players found
+/// Find players by using ExtendedTargeting. This validator fails when if no players found <br/>
+/// You can obtain validated targets by using `validatedArguments.GetArgument&lt;List&lt;IGameClient&gt;&gt;(argumentIndex)`
 /// </summary>
 /// <param name="argumentIndex">Index of the argument containing the target string (1-based)</param>
 /// <param name="dontNotifyWhenFailed">When true, it will return TnmsCommandValidationResult.FailedIgnoreDefault to avoid print default failure message</param>
