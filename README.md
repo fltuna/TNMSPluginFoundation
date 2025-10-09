@@ -4,7 +4,7 @@ TnmsPluginFoundation is a foundational library for developing ModSharp modules, 
 
 ## Implementation Example
 
-For an actual implementation example, see the [TnmsPluginFoundationExample](../TnmsPluginFoundationExample) repository.
+For an actual implementation example, see the [TnmsPluginFoundationExample](./TnmsPluginFoundation.Example) directory.
 
 ## Dependencies
 
