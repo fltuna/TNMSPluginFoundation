@@ -33,14 +33,14 @@ echo Building TNMS Projects for %PLATFORM_NAME% (%PLATFORM%)
 echo:
 
 REM Define projects to build (add/remove projects as needed)
-set PROJECTS=TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example
+set PROJECTS=TnmsPluginFoundation.Example
 
 REM Define shared projects in dependency order (base projects first)
-set SHARED_PROJECTS_PHASE1=TnmsAdministrationPlatform.Shared TnmsExtendableTargeting.Shared TnmsLocalizationPlatform.Shared
-set SHARED_PROJECTS_PHASE2=TnmsPluginFoundation
+set SHARED_PROJECTS_PHASE1=TnmsPluginFoundation
+set SHARED_PROJECTS_PHASE2=
 
 REM Define build only shared projects (these projects will not be copied to shared directory)
-set BUILD_ONLY_SHARED_PROJECTS=TnmsDatabaseUtil.Shared
+set BUILD_ONLY_SHARED_PROJECTS=
 
 REM Define DLLs to remove (provided by ModSharp)
 set DLLS_TO_REMOVE=Google.Protobuf.dll McMaster.NETCore.Plugins.dll Microsoft.Extensions.Configuration.dll Microsoft.Extensions.Configuration.Abstractions.dll Microsoft.Extensions.Configuration.Binder.dll Microsoft.Extensions.Configuration.FileExtensions.dll Microsoft.Extensions.Configuration.Json.dll Microsoft.Extensions.DependencyInjection.dll Microsoft.Extensions.DependencyInjection.Abstractions.dll Microsoft.Extensions.Diagnostics.dll Microsoft.Extensions.Diagnostics.Abstractions.dll Microsoft.Extensions.FileProviders.Abstractions.dll Microsoft.Extensions.FileProviders.Physical.dll Microsoft.Extensions.FileSystemGlobbing.dll Microsoft.Extensions.Http.dll Microsoft.Extensions.Logging.dll Microsoft.Extensions.Logging.Abstractions.dll Microsoft.Extensions.Logging.Configuration.dll Microsoft.Extensions.Logging.Console.dll Microsoft.Extensions.Options.dll Microsoft.Extensions.Options.ConfigurationExtensions.dll Microsoft.Extensions.Primitives.dll Serilog.dll Serilog.Extensions.Logging.dll Serilog.Sinks.Console.dll Serilog.Sinks.File.dll Serilog.Sinks.Async.dll Serilog.Expressions.dll System.Text.Json
@@ -52,12 +52,7 @@ echo Building shared projects (Phase 1 - Base projects)...
 for %%P in (%SHARED_PROJECTS_PHASE1%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release
-        if !ERRORLEVEL! neq 0 (
-            echo Error building %%P
-            exit /b 1
-        )
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -77,12 +72,7 @@ echo Building shared projects (Phase 2 - Dependent projects)...
 for %%P in (%SHARED_PROJECTS_PHASE2%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release
-        if !ERRORLEVEL! neq 0 (
-            echo Error building %%P
-            exit /b 1
-        )
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -102,12 +92,7 @@ echo Building build-only shared projects...
 for %%P in (%BUILD_ONLY_SHARED_PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building build-only shared project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release
-        if !ERRORLEVEL! neq 0 (
-            echo Error building %%P
-            exit /b 1
-        )
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -120,12 +105,7 @@ echo Building main projects...
 for %%P in (%PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building project: %%P
-        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release
-        if !ERRORLEVEL! neq 0 (
-            echo Error building %%P
-            exit /b 1
-        )
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/modules/%%P"
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/modules/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
