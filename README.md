@@ -8,8 +8,18 @@ For an actual implementation example, see the [TnmsPluginFoundationExample](../T
 
 ## Dependencies
 
+### Development
+
 Install `TnmsPluginFoundation` from NuGet:
 
 ```shell
 dotnet add package TnmsPluginFoundation
 ```
+
+### Runtime
+
+You need install these to shared directory of ModSharp:
+
+- [TnmsExtendableTargeting](https://github.com/fltuna/TnmsExtendableTargeting)
+- [TnmsLocalizationPlatform](https://github.com/fltuna/TnmsLocalizationPlatform)
+- [TnmsAdministrationPlatform](https://github.com/fltuna/TnmsAdministrationPlatform)
