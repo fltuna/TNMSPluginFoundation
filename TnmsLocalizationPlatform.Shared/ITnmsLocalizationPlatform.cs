@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Microsoft.Extensions.Localization;
 using Sharp.Shared;
 using Sharp.Shared.Objects;
 

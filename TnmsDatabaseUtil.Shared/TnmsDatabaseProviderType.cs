@@ -1,4 +1,4 @@
-﻿namespace TnmsCentralizedDbPlatform.Shared;
+﻿namespace TnmsDatabaseUtil.Shared;
 
 public enum TnmsDatabaseProviderType
 {

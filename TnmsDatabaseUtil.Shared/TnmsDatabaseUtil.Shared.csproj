@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    
+    <PropertyGroup>
+      <PackageId>TnmsDatabaseUtil.Shared</PackageId>
+      <RootNamespace>TnmsDatabaseUtil.Shared</RootNamespace>
+    </PropertyGroup>
+    
+    <Import Project="..\config.props" />   
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" ExcludeAssets="runtime" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" ExcludeAssets="runtime" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" ExcludeAssets="runtime" />
+    </ItemGroup>
+</Project>

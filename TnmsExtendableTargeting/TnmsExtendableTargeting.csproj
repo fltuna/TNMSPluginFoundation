@@ -5,6 +5,7 @@
     <PropertyGroup>
         <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
         <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+        <AssemblyName>TnmsExtendableTargeting</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

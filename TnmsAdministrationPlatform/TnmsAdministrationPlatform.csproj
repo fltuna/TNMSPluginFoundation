@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-        <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+        <AssemblyName>TnmsAdministrationPlatform</AssemblyName>
     </PropertyGroup>
     
     <ItemGroup>
@@ -17,7 +17,7 @@
         </PackageReference>
         
         <ProjectReference Include="..\TnmsAdministrationPlatform.Shared\TnmsAdministrationPlatform.Shared.csproj"  Private="false" ExcludeAssets="all"/>
-        <ProjectReference Include="..\TnmsCentralizedDbPlatform.Shared\TnmsCentralizedDbPlatform.Shared.csproj" Private="false" ExcludeAssets="all" />
+        <ProjectReference Include="..\TnmsDatabaseUtil.Shared\TnmsDatabaseUtil.Shared.csproj" Private="false"/>
     </ItemGroup>
 
 </Project>

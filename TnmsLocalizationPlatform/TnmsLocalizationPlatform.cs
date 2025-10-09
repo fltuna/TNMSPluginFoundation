@@ -16,7 +16,7 @@ using TnmsLocalizationPlatform.Data;
 using TnmsLocalizationPlatform.Internal;
 using TnmsLocalizationPlatform.Services;
 using TnmsLocalizationPlatform.Shared;
-using TnmsCentralizedDbPlatform.Shared;
+using TnmsDatabaseUtil.Shared;
 
 namespace TnmsLocalizationPlatform;
 
@@ -24,8 +24,8 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
 {
     internal readonly ILogger Logger;
     internal readonly ISharedSystem SharedSystem;
+    private readonly string _dllPath;
 
-    private ITnmsCentralizedDbPlatform? _dbPlatform;
     private LocalizationDbContext? _dbContext;
     private UserLanguageService _userLanguageService = null!;
     
@@ -38,13 +38,16 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
         IConfiguration? coreConfiguration,
         bool hotReload)
     {
-        SharedSystem = sharedSystem;
-        Logger = sharedSystem.GetLoggerFactory().CreateLogger<TnmsLocalizationPlatform>();
-
         ArgumentNullException.ThrowIfNull(dllPath);
         ArgumentNullException.ThrowIfNull(sharpPath);
         ArgumentNullException.ThrowIfNull(version);
         ArgumentNullException.ThrowIfNull(coreConfiguration);
+        
+        SharedSystem = sharedSystem;
+        Logger = sharedSystem.GetLoggerFactory().CreateLogger<TnmsLocalizationPlatform>();
+        
+        _dllPath = dllPath;
+
     }
 
 
@@ -61,7 +64,7 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     internal readonly ConcurrentDictionary<byte, CultureInfo> ClientCultures = new();
 
     // TODO() Get ServerDefault culture from config
-    internal CultureInfo ServerDefaultCulture { get; set; } = new CultureInfo("en-US");
+    internal CultureInfo ServerDefaultCulture { get; set; } = new("en-US");
 
     public bool Init()
     {
@@ -97,23 +100,15 @@ public class TnmsLocalizationPlatform : IModSharpModule, ITnmsLocalizationPlatfo
     {
         try
         {
-            _dbPlatform = SharedSystem.GetSharpModuleManager()
-                .GetRequiredSharpModuleInterface<ITnmsCentralizedDbPlatform>(
-                    ITnmsCentralizedDbPlatform.ModSharpModuleIdentity).Instance;
-
-            if (_dbPlatform == null)
-            {
-                Logger.LogWarning("TnmsCentralizedDbPlatform not found. Database features will be disabled.");
-                return false;
-            }
-
+            // TODO() Configure database from config
             var dbParams = new DbConnectionParameters
             {
                 ProviderType = TnmsDatabaseProviderType.Sqlite,
-                Host = "localization.db"
+                Host = Path.Combine(_dllPath, "localization.db")
             };
 
-            var options = _dbPlatform.ConfigureDbContext<LocalizationDbContext>(dbParams, "TnmsLocalizationPlatform");
+            
+            var options = ConnectionStringUtil.ConfigureDbContext<LocalizationDbContext>(dbParams);
             _dbContext = new LocalizationDbContext(options.Options);
             
             if (!ApplyDatabaseMigrations())

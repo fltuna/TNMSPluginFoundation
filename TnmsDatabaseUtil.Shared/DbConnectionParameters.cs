@@ -1,4 +1,6 @@
-﻿namespace TnmsCentralizedDbPlatform.Shared;
+﻿using System.Collections.Generic;
+
+namespace TnmsDatabaseUtil.Shared;
 
 public class DbConnectionParameters
 {
@@ -12,4 +14,6 @@ public class DbConnectionParameters
     public string? Database { get; set; }
     public string? Username { get; set; }
     public string? Password { get; set; }
+    
+    public Dictionary<string, string> AdditionalParameters { get; } = new();
 }

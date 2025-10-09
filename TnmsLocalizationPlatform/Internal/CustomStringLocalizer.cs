@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Extensions.Localization;
 using Sharp.Shared.Objects;
 using TnmsLocalizationPlatform.Shared;
 
 namespace TnmsLocalizationPlatform.Internal;
 
-public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>> translations): ITnmsLocalizer
+public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>> translations) : ITnmsLocalizer
 {
     private Dictionary<string, Dictionary<string, string>> _translations = translations;
     
@@ -16,58 +15,55 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
         _translations = newTranslations;
     }
     
-    public LocalizedString this[string name]
+    public TnmsLocalizedString this[string name]
     {
         get
         {
             if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
             {
-                if(translation == null)
-                    return new LocalizedString(name, name, false);
+                translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
             }
             
             var value = translation.GetValueOrDefault(name, name);
-            return new LocalizedString(name, value, !_translations.ContainsKey(name));
+            var notFound = !translation.ContainsKey(name);
+            return new TnmsLocalizedString(name, value, notFound);
         }
     }
 
-    public LocalizedString this[string name, params object[] arguments]
+    public TnmsLocalizedString this[string name, params object[] arguments]
     {
         get
         {
             if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
             {
-                translation = _translations.First().Value;
+                translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
             }
             var format = translation.GetValueOrDefault(name, name);
+            var notFound = !translation.ContainsKey(name);
         
             var value = arguments.Length == 0
                 ? format 
                 : string.Format(format, arguments);
-            return new LocalizedString(name, value, !_translations.ContainsKey(name));
+            return new TnmsLocalizedString(name, value, notFound);
         }
     }
     
-    
-    public LocalizedString this[string name, CultureInfo culture]
+    public TnmsLocalizedString this[string name, CultureInfo culture]
     {
         get
         {
-            LocalizedString value;
             if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
             {
-                value = this[name];
+                return this[name];
             }
-            else
-            {
-                var rawValue = translation.GetValueOrDefault(name, name);
-                value = new LocalizedString(name, rawValue, !_translations.ContainsKey(name));
-            }
-            return value;
+            
+            var value = translation.GetValueOrDefault(name, name);
+            var notFound = !translation.ContainsKey(name);
+            return new TnmsLocalizedString(name, value, notFound);
         }
     }
     
-    public LocalizedString this[string name, CultureInfo culture, params object[] arguments]
+    public TnmsLocalizedString this[string name, CultureInfo culture, params object[] arguments]
     {
         get
         {
@@ -77,10 +73,11 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
             }
         
             var format = translation.GetValueOrDefault(name, name);
+            var notFound = !translation.ContainsKey(name);
             var value = arguments.Length == 0 
                 ? format 
                 : string.Format(format, arguments);
-            return new LocalizedString(name, value, !_translations.ContainsKey(name));
+            return new TnmsLocalizedString(name, value, notFound);
         }
     }
 
@@ -92,82 +89,66 @@ public class CustomStringLocalizer(Dictionary<string, Dictionary<string, string>
         return TnmsLocalizationPlatform.Instance.ServerDefaultCulture;
     }
 
-    public LocalizedString ForClient(IGameClient client, string name)
+    public TnmsLocalizedString ForClient(IGameClient client, string name)
     {
-        string format;
-        
         if (!TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
         {
-            if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
-            {
-                translation = _translations.First().Value;
-            }
-            format = translation.GetValueOrDefault(name, name);
-        }
-        else
-        {
-            if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
-            {
-                if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
-                {
-                    translation = _translations.First().Value;
-                }
-            }
-            format = translation.GetValueOrDefault(name, name);
+            culture = TnmsLocalizationPlatform.Instance.ServerDefaultCulture;
         }
         
-        return new LocalizedString(name, format, !_translations.ContainsKey(name));
+        if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
+        {
+            if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
+            {
+                translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
+            }
+        }
+        
+        var value = translation.GetValueOrDefault(name, name);
+        var notFound = !translation.ContainsKey(name);
+        return new TnmsLocalizedString(name, value, notFound);
     }
 
-    public LocalizedString ForClient(IGameClient client, string name, params object[] arguments)
+    public TnmsLocalizedString ForClient(IGameClient client, string name, params object[] arguments)
     {
-        string format;
-        
         if (!TnmsLocalizationPlatform.Instance.ClientCultures.TryGetValue(client.Slot, out var culture))
         {
-            if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
-            {
-                translation = _translations.First().Value;
-            }
-            format = translation.GetValueOrDefault(name, name);
-        }
-        else
-        {
-            if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
-            {
-                if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
-                {
-                    translation = _translations.First().Value;
-                }
-            }
-            format = translation.GetValueOrDefault(name, name);
+            culture = TnmsLocalizationPlatform.Instance.ServerDefaultCulture;
         }
         
+        if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
+        {
+            if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out translation))
+            {
+                translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
+            }
+        }
+        
+        var format = translation.GetValueOrDefault(name, name);
+        var notFound = !translation.ContainsKey(name);
         var value = arguments.Length == 0
-            ? format :
-            string.Format(format, arguments);
-        return new LocalizedString(name, value, !_translations.ContainsKey(name));
+            ? format 
+            : string.Format(format, arguments);
+        return new TnmsLocalizedString(name, value, notFound);
     }
 
-    public IEnumerable<LocalizedString> GetAllStringsByCulture(CultureInfo culture)
+    public IEnumerable<KeyValuePair<string, string>> GetAllStringsByCulture(CultureInfo culture)
     {
         if (!_translations.TryGetValue(culture.TwoLetterISOLanguageName, out var translation))
         {
-            translation = _translations.First().Value;
+            translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
         }
         
-        return translation.Select(t => 
-            new LocalizedString(t.Key, t.Value, false));
+        return translation;
     }
 
-    public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+    public IEnumerable<KeyValuePair<string, string>> GetAllStrings()
     {
         if (!_translations.TryGetValue(TnmsLocalizationPlatform.Instance.ServerDefaultCulture.TwoLetterISOLanguageName, out var translation))
         {
-            translation = _translations.First().Value;
+            translation = _translations.FirstOrDefault().Value ?? new Dictionary<string, string>();
         }
         
-        return translation.Select(t => 
-            new LocalizedString(t.Key, t.Value, false));
+        return translation;
     }
 }

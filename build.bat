@@ -33,11 +33,14 @@ echo Building TNMS Projects for %PLATFORM_NAME% (%PLATFORM%)
 echo:
 
 REM Define projects to build (add/remove projects as needed)
-set PROJECTS=TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example A0TnmsDependencyLoader
+set PROJECTS=TnmsAdministrationPlatform TnmsCentralizedDbPlatform TnmsExtendableTargeting TnmsLocalizationPlatform TnmsPluginFoundation.Example
 
 REM Define shared projects in dependency order (base projects first)
-set SHARED_PROJECTS_PHASE1=TnmsAdministrationPlatform.Shared TnmsCentralizedDbPlatform.Shared TnmsExtendableTargeting.Shared TnmsLocalizationPlatform.Shared
+set SHARED_PROJECTS_PHASE1=TnmsAdministrationPlatform.Shared TnmsExtendableTargeting.Shared TnmsLocalizationPlatform.Shared
 set SHARED_PROJECTS_PHASE2=TnmsPluginFoundation
+
+REM Define build only shared projects (these projects will not be copied to shared directory)
+set BUILD_ONLY_SHARED_PROJECTS=TnmsDatabaseUtil.Shared
 
 REM Define DLLs to remove (provided by ModSharp)
 set DLLS_TO_REMOVE=Google.Protobuf.dll McMaster.NETCore.Plugins.dll Microsoft.Extensions.Configuration.dll Microsoft.Extensions.Configuration.Abstractions.dll Microsoft.Extensions.Configuration.Binder.dll Microsoft.Extensions.Configuration.FileExtensions.dll Microsoft.Extensions.Configuration.Json.dll Microsoft.Extensions.DependencyInjection.dll Microsoft.Extensions.DependencyInjection.Abstractions.dll Microsoft.Extensions.Diagnostics.dll Microsoft.Extensions.Diagnostics.Abstractions.dll Microsoft.Extensions.FileProviders.Abstractions.dll Microsoft.Extensions.FileProviders.Physical.dll Microsoft.Extensions.FileSystemGlobbing.dll Microsoft.Extensions.Http.dll Microsoft.Extensions.Logging.dll Microsoft.Extensions.Logging.Abstractions.dll Microsoft.Extensions.Logging.Configuration.dll Microsoft.Extensions.Logging.Console.dll Microsoft.Extensions.Options.dll Microsoft.Extensions.Options.ConfigurationExtensions.dll Microsoft.Extensions.Primitives.dll Serilog.dll Serilog.Extensions.Logging.dll Serilog.Sinks.Console.dll Serilog.Sinks.File.dll Serilog.Sinks.Async.dll Serilog.Expressions.dll System.Text.Json
@@ -95,6 +98,23 @@ for %%P in (%SHARED_PROJECTS_PHASE2%) do (
     )
 )
 
+echo Building build-only shared projects...
+for %%P in (%BUILD_ONLY_SHARED_PROJECTS%) do (
+    if exist "%%P\%%P.csproj" (
+        echo Building build-only shared project: %%P
+        dotnet build %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers -c Release
+        if !ERRORLEVEL! neq 0 (
+            echo Error building %%P
+            exit /b 1
+        )
+        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release --no-build --output ".build/shared/%%P"
+        if !ERRORLEVEL! neq 0 (
+            echo Error publishing %%P
+            exit /b 1
+        )
+    )
+)
+
 echo:
 echo Building main projects...
 for %%P in (%PROJECTS%) do (
@@ -149,7 +169,7 @@ for %%P in (%PROJECTS%) do (
         REM Move all DLLs except the main plugin DLL to dependencies directory
         set MAIN_DLL=%%P.dll
         set MODULE_DIR=.build\modules\%%P
-        set DEP_DIR=!MODULE_DIR!\dependencies
+        set DEP_DIR=!MODULE_DIR!\
         set HAS_DEPENDENCIES=0
         
         REM Check if there are any dependency DLLs to move

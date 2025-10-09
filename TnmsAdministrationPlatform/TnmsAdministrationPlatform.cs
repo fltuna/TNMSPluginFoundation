@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform.Data;
 using TnmsAdministrationPlatform.Services;
 using TnmsAdministrationPlatform.Shared;
-using TnmsCentralizedDbPlatform.Shared;
+using TnmsDatabaseUtil.Shared;
 
 namespace TnmsAdministrationPlatform;
 
@@ -20,8 +21,8 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
 {
     private readonly ILogger _logger;
     private readonly ISharedSystem _sharedSystem;
+    private readonly string _dllPath;
     
-    private ITnmsCentralizedDbPlatform? _dbPlatform;
     private AdministrationDbContext? _dbContext;
     
     private UserPermissionService? _userPermissionService;
@@ -37,13 +38,15 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
         IConfiguration?          coreConfiguration,
         bool                     hotReload)
     {
-        _sharedSystem = sharedSystem;
-        _logger = sharedSystem.GetLoggerFactory().CreateLogger<TnmsAdministrationPlatform>();
         
         ArgumentNullException.ThrowIfNull(dllPath);
         ArgumentNullException.ThrowIfNull(sharpPath);
         ArgumentNullException.ThrowIfNull(version);
         ArgumentNullException.ThrowIfNull(coreConfiguration);
+        
+        _dllPath = dllPath;
+        _sharedSystem = sharedSystem;
+        _logger = sharedSystem.GetLoggerFactory().CreateLogger<TnmsAdministrationPlatform>();
     }
     
     private readonly Dictionary<ulong, IAdminUser> _userPermissions = new();
@@ -91,23 +94,13 @@ public class TnmsAdministrationPlatform: IModSharpModule, IAdminManager, IClient
     {
         try
         {
-            _dbPlatform = _sharedSystem.GetSharpModuleManager()
-                .GetRequiredSharpModuleInterface<ITnmsCentralizedDbPlatform>(
-                    ITnmsCentralizedDbPlatform.ModSharpModuleIdentity).Instance;
-
-            if (_dbPlatform == null)
-            {
-                _logger.LogWarning("TnmsCentralizedDbPlatform not found. Database features will be disabled.");
-                return false;
-            }
-
             var dbParams = new DbConnectionParameters
             {
                 ProviderType = _dbProviderType,
-                Host = "administration.db"
+                Host = Path.Combine(_dllPath, "administration.db")
             };
 
-            var options = _dbPlatform.ConfigureDbContext<AdministrationDbContext>(dbParams, "TnmsAdministrationPlatform");
+            var options = ConnectionStringUtil.ConfigureDbContext<AdministrationDbContext>(dbParams);
             _dbContext = new AdministrationDbContext(options.Options);
             
             if (!ApplyDatabaseMigrations())

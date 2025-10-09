@@ -1,7 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <Import Project="..\config.props" />
-
+    
+    <PropertyGroup>
+        <AssemblyName>TnmsExtendableTargeting.Shared</AssemblyName>
+    </PropertyGroup>
+    
     <ItemGroup>
         <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" ExcludeAssets="runtime" />
     </ItemGroup>
