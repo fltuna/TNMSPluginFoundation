@@ -6,10 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
-using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
-using Sharp.Shared.Objects;
-using TnmsAdministrationPlatform;
 using TnmsAdministrationPlatform.Shared;
 using TnmsExtendableTargeting.Shared;
 using TnmsLocalizationPlatform.Shared;
@@ -258,11 +255,17 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         UnloadAllModules();
         
         // Use reverse iteration to avoid collection modification issues
-        for (int i = TnmsAbstractedCommands.Count - 1; i >= 0; i--)
+        foreach (var tnmsAbstractedClientCommand in TnmsAbstractedClientCommands)
         {
-            RemoveTnmsCommand(TnmsAbstractedCommands[i]);
+            RemoveTnmsCommand(tnmsAbstractedClientCommand.Value);
         }
-        TnmsAbstractedCommands.Clear();
+        TnmsAbstractedClientCommands.Clear();
+        
+        foreach (var tnmsAbstractedServerCommand in TnmsAbstractedServerCommands)
+        {
+            RemoveTnmsCommand(tnmsAbstractedServerCommand.Value);
+        }
+        TnmsAbstractedServerCommands.Clear();
         
         ServiceProvider.Dispose();
     }
@@ -340,7 +343,8 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     }
     
     
-    private List<TnmsAbstractCommandBase> TnmsAbstractedCommands { get; } = new();
+    private Dictionary<string, TnmsAbstractCommandBase> TnmsAbstractedClientCommands { get; } = new();
+    private Dictionary<string, TnmsAbstractCommandBase> TnmsAbstractedServerCommands { get; } = new();
 
     /// <summary>
     /// Add TnmsAbstracted command to ModSharp
@@ -350,19 +354,60 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         if (command.CommandRegistrationType == 0)
             throw new ArgumentException("Command registration type should have at least 1 flag!");
-        
-        if (TnmsAbstractedCommands.Any(c => c.CommandName == command.CommandName))
-        {
-            throw new InvalidOperationException($"Command '{command.CommandName}' is already registered");
-        }
-        
-        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
-            SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
-        
-        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
-            SharedSystem.GetConVarManager().CreateConsoleCommand("ms_" + command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
 
-        TnmsAbstractedCommands.Add(command);
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
+        {
+            if (TnmsAbstractedClientCommands.Any(c => c.Key == command.CommandName))
+            {
+                throw new InvalidOperationException($"Command '{command.CommandName}' is already registered");
+            }
+            
+            SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
+            TnmsAbstractedClientCommands.Add(command.CommandName, command);
+
+            if (command.CommandAliases.Any())
+            {
+                foreach (var commandCommandAlias in command.CommandAliases)
+                {
+                    string aliasFullCommandName = "ms_" + commandCommandAlias;
+                    
+                    if (TnmsAbstractedClientCommands.Any(c => c.Key == aliasFullCommandName))
+                    {
+                        Logger.LogWarning("Command alias '{alias}' is already registered, skipping alias registration.", aliasFullCommandName);
+                        continue;
+                    }
+                    
+                    SharedSystem.GetClientManager().InstallCommandCallback(aliasFullCommandName, command.Execute);
+                    TnmsAbstractedClientCommands.Add(commandCommandAlias, command);
+                }
+            }
+        }
+
+        if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
+        {
+            if (TnmsAbstractedServerCommands.Any(c => c.Key == command.CommandName))
+            {
+                throw new InvalidOperationException($"Command for server 'ms_{command.CommandName}' is already registered");
+            }
+            
+            SharedSystem.GetConVarManager().CreateConsoleCommand("ms_" + command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
+            TnmsAbstractedServerCommands.Add(command.CommandName, command);
+            
+            if (command.CommandAliases.Any())
+            {
+                foreach (var commandCommandAlias in command.CommandAliases)
+                {
+                    if (TnmsAbstractedServerCommands.Any(c => c.Key == commandCommandAlias))
+                    {
+                        Logger.LogWarning("Command alias '{alias}' is already registered, skipping alias registration.", commandCommandAlias);
+                        continue;
+                    }
+                    
+                    SharedSystem.GetConVarManager().CreateConsoleCommand("ms_" + commandCommandAlias, command.Execute, command.CommandDescription, command.ConVarFlags);
+                    TnmsAbstractedServerCommands.Add(commandCommandAlias, command);
+                }
+            }
+        }
     }
     
     /// <summary>
@@ -378,18 +423,43 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Remove TnmsAbstracted command to ModSharp
     /// </summary>
     /// <param name="command">Classes that inherited TnmsAbstractCommandBase</param>
-    /// <param name="registrationType">Command regstration type</param>
     public void RemoveTnmsCommand(TnmsAbstractCommandBase command)
     {
         if (command.CommandRegistrationType == 0)
             throw new ArgumentException("Command registration type should have at least 1 flag!");
-        
+
         if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Client))
+        {
             SharedSystem.GetClientManager().RemoveCommandCallback(command.CommandName, command.Execute);
-        
+
+            foreach (var commandAlias in command.CommandAliases)
+            {
+                if (!TnmsAbstractedClientCommands.TryGetValue(commandAlias, out var alias))
+                    continue;
+                
+                if (alias.CommandName != command.CommandName)
+                    continue;
+                
+                SharedSystem.GetClientManager().RemoveCommandCallback(commandAlias, command.Execute);
+                TnmsAbstractedClientCommands.Remove(commandAlias);
+            }
+        }
+
         if (command.CommandRegistrationType.HasFlag(TnmsCommandRegistrationType.Server))
+        {
             SharedSystem.GetConVarManager().ReleaseCommand("ms_" + command.CommandName);
 
-        TnmsAbstractedCommands.Remove(command);
+            foreach (var commandCommandAlias in command.CommandAliases)
+            {
+                if (!TnmsAbstractedServerCommands.TryGetValue(commandCommandAlias, out var alias))
+                    continue;
+                
+                if (alias.CommandName != command.CommandName)
+                    continue;
+                
+                SharedSystem.GetConVarManager().ReleaseCommand("ms_" + commandCommandAlias);
+                TnmsAbstractedServerCommands.Remove(commandCommandAlias);
+            }
+        }
     }
 }

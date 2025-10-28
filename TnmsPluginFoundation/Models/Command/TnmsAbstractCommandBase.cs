@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
@@ -17,6 +18,11 @@ public abstract class TnmsAbstractCommandBase(IServiceProvider provider): Plugin
     /// Name of command (e.g. test)  'ms_' prefix is automatically declared so we don't need to specify here
     /// </summary>
     public abstract string CommandName { get; }
+    
+    /// <summary>
+    /// Aliases of command. Same as CommandName, 'ms_' prefix is automatically declared
+    /// </summary>
+    public virtual List<string> CommandAliases { get; } = new();
     
     /// <summary>
     /// Description of command
