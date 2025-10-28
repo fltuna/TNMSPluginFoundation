@@ -10,7 +10,8 @@ namespace TnmsPluginFoundation.Example.Modules.PermissionTest.Commands;
 public class PermissionCheck(IServiceProvider provider) : TnmsAbstractCommandBase(provider)
 {
     // ms_ is automatically declared so we don't need to specify here
-    public override string CommandName => "cp";
+    public override string CommandName => "checkpermission";
+    public override List<string> CommandAliases { get; } = ["checkperm", "cp"];
     public override string CommandDescription => "";
     public override TnmsCommandRegistrationType CommandRegistrationType => TnmsCommandRegistrationType.Client;
 
