@@ -54,15 +54,15 @@ jobs:
           
       - name: Download Tnms Library files from GitHub latest release
         run: |
-        Invoke-WebRequest https://github.com/fltuna/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform.zip -OutFile TnmsAdministrationPlatform.zip
-        Invoke-WebRequest https://github.com/fltuna/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting.zip -OutFile TnmsExtendableTargeting.zip
-        Invoke-WebRequest https://github.com/fltuna/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform.zip -OutFile TnmsLocalizationPlatform.zip
+          Invoke-WebRequest https://github.com/fltuna/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform.zip -OutFile TnmsAdministrationPlatform.zip
+          Invoke-WebRequest https://github.com/fltuna/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting.zip -OutFile TnmsExtendableTargeting.zip
+          Invoke-WebRequest https://github.com/fltuna/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform.zip -OutFile TnmsLocalizationPlatform.zip
         
       - name: Extract Tnms Library files
         run: |
-        Expand-Archive -Path TnmsAdministrationPlatform.zip -DestinationPath .\.build\
-        Expand-Archive -Path TnmsExtendableTargeting.zip -DestinationPath .\.build\
-        Expand-Archive -Path TnmsLocalizationPlatform.zip -DestinationPath .\.build\
+          Expand-Archive -Path TnmsAdministrationPlatform.zip -DestinationPath .\.build\
+          Expand-Archive -Path TnmsExtendableTargeting.zip -DestinationPath .\.build\
+          Expand-Archive -Path TnmsLocalizationPlatform.zip -DestinationPath .\.build\
 
       - name: Compress artifacts
         run:
