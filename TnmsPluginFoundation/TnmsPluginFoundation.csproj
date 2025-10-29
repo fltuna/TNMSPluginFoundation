@@ -8,9 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.4" ExcludeAssets="runtime" />
-    <PackageReference Include="TnmsAdministrationPlatform.Shared" Version="0.0.0" ExcludeAssets="runtime"/>
-    <PackageReference Include="TnmsExtendableTargeting.Shared" Version="0.0.0" ExcludeAssets="runtime"/>
-    <PackageReference Include="TnmsLocalizationPlatform.Shared" Version="0.0.0" ExcludeAssets="runtime"/>
+    <PackageReference Include="TnmsAdministrationPlatform.Shared" Version="0.0.1" ExcludeAssets="runtime"/>
+    <PackageReference Include="TnmsExtendableTargeting.Shared" Version="0.0.1" ExcludeAssets="runtime"/>
+    <PackageReference Include="TnmsLocalizationPlatform.Shared" Version="0.0.1" ExcludeAssets="runtime"/>
   </ItemGroup>
   
 </Project>
