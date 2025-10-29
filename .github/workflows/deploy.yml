@@ -51,6 +51,10 @@ jobs:
       - name: Remove unnecessary files
         run: |
           Remove-Item .\.build\modules\ -Recurse
+
+      - name: Compress artifacts
+        run:
+          Compress-Archive -Path .build/* -Destination TnmsPluginFoundation-Core.zip
           
       - name: Download Tnms Library files from GitHub latest release
         run: |
@@ -66,13 +70,15 @@ jobs:
 
       - name: Compress artifacts
         run:
-          Compress-Archive -Path .build/* -Destination TnmsPluginFoundation.zip
+          Compress-Archive -Path .build/* -Destination TnmsPluginFoundation-WithDependencies-Windows-x64.zip
 
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
-          path: TnmsPluginFoundation.zip
+          path: |
+            TnmsPluginFoundation-Core.zip
+            TnmsPluginFoundation-WithDependencies-Windows-x64.zip
 
   release:
     runs-on: windows-latest
@@ -94,7 +100,7 @@ jobs:
 
       - name: Create Release and Upload Asset
         run: |
-          gh release create "${{ github.ref_name }}" --title "Release ${{ github.ref_name }}" --generate-notes --draft=false artifacts/TnmsPluginFoundation.zip
+          gh release create "${{ github.ref_name }}" --title "Release ${{ github.ref_name }}" --generate-notes --draft=false artifacts/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
