@@ -359,7 +359,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         {
             if (TnmsAbstractedClientCommands.Any(c => c.Key == command.CommandName))
             {
-                throw new InvalidOperationException($"Command '{command.CommandName}' is already registered");
+                Logger.LogWarning("Command alias '{alias}' is already registered, skipping alias registration.", command.CommandName);
             }
             
             SharedSystem.GetClientManager().InstallCommandCallback(command.CommandName, command.Execute);
@@ -369,15 +369,13 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
             {
                 foreach (var commandCommandAlias in command.CommandAliases)
                 {
-                    string aliasFullCommandName = "ms_" + commandCommandAlias;
-                    
-                    if (TnmsAbstractedClientCommands.Any(c => c.Key == aliasFullCommandName))
+                    if (TnmsAbstractedClientCommands.Any(c => c.Key == commandCommandAlias))
                     {
-                        Logger.LogWarning("Command alias '{alias}' is already registered, skipping alias registration.", aliasFullCommandName);
+                        Logger.LogWarning("Command alias '{alias}' is already registered, skipping alias registration.", commandCommandAlias);
                         continue;
                     }
                     
-                    SharedSystem.GetClientManager().InstallCommandCallback(aliasFullCommandName, command.Execute);
+                    SharedSystem.GetClientManager().InstallCommandCallback(commandCommandAlias, command.Execute);
                     TnmsAbstractedClientCommands.Add(commandCommandAlias, command);
                 }
             }
@@ -387,7 +385,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         {
             if (TnmsAbstractedServerCommands.Any(c => c.Key == command.CommandName))
             {
-                throw new InvalidOperationException($"Command for server 'ms_{command.CommandName}' is already registered");
+                Logger.LogWarning("Command for server 'ms_{cmdName}' is already registered.", command.CommandName);
             }
             
             SharedSystem.GetConVarManager().CreateConsoleCommand("ms_" + command.CommandName, command.Execute, command.CommandDescription, command.ConVarFlags);
