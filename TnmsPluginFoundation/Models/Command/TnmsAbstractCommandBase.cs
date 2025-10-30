@@ -22,7 +22,7 @@ public abstract class TnmsAbstractCommandBase(IServiceProvider provider): Plugin
     /// <summary>
     /// Aliases of command. Same as CommandName, 'ms_' prefix is automatically declared
     /// </summary>
-    public virtual List<string> CommandAliases { get; } = new();
+    public virtual List<string> CommandAliases { get; } = [];
     
     /// <summary>
     /// Description of command
