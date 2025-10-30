@@ -132,8 +132,8 @@ jobs:
       - name: Extract version
         id: package_version
         run: |
-          $xml = [Xml] (Get-Content TnmsPluginFoundation/TnmsPluginFoundation.csproj)
-          $version = $xml.Project.PropertyGroup.PackageVersion
+          $xml = [Xml] (Get-Content config.props)
+          $version = $xml.SelectSingleNode("//Project/PropertyGroup/Version").InnerText.Trim()
           echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
         shell: pwsh
 
