@@ -9,7 +9,7 @@ namespace TnmsPluginFoundation.Models.Command.Validators.RangedValidators;
 /// Validates command arguments within a specified numeric range
 /// </summary>
 /// <typeparam name="T">Numeric type to validate</typeparam>
-public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedArgumentValidator 
+public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedArgumentValidator<T>
     where T : struct, INumber<T>, IComparable<T>
 {
     private readonly T _min;
@@ -71,6 +71,8 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// Message of validation failure
     /// </summary>
     public override string ValidationFailureMessage => "Common.Validation.Failure.Ranged";
+
+    public int ArgumentIndex => _argumentIndex;
 
     /// <summary>
     /// Validates command input for ICommandValidator interface
@@ -233,4 +235,10 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
         
         return validatedArguments;
     }
+    
+    public T GetMax()
+        => _max;
+
+    public T GetMin()
+        => _min;
 }
