@@ -2,6 +2,7 @@
 using System.Linq;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
+using TnmsExtendableTargeting.Shared;
 
 namespace TnmsPluginFoundation.Models.Command.Validators;
 
@@ -16,7 +17,7 @@ namespace TnmsPluginFoundation.Models.Command.Validators;
 /// <param name="bypassAdminCheck">When true, it will bypass admin check</param>
 public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFailed = false, bool bypassAdminCheck = false): CommandValidatorBase
 {
-    private List<IGameClient>? _lastFoundTargets;
+    private ITargetingResult? _lastFoundTargets;
     private string? _lastTargetString;
     /// <summary>
     /// Name of this validator for identification purposes
@@ -51,7 +52,7 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
         var targetString = commandInfo.GetArg(argumentIndex);
         _lastTargetString = targetString;
 
-        if (!TnmsPlugin.ExtendableTargeting.ResolveTarget(targetString, client, out var foundTargets))
+        if (!TnmsPlugin.ExtendableTargeting.ResolveTarget(targetString, client, out var foundTargets) || foundTargets == null)
         {
             if (dontNotifyWhenFailed)
                 return TnmsCommandValidationResult.FailedIgnoreDefault;
@@ -65,17 +66,22 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
             return TnmsCommandValidationResult.Success;
         }
 
-        foundTargets = foundTargets
+        var targets = foundTargets.GetTargets();
+        var adminCheckedTargets = targets
             .Where(target => TnmsPlugin.AdminManager.ClientCanTarget(client, target))
             .ToList();
-
-        if (!foundTargets.Any())
+        
+        if (!adminCheckedTargets.Any())
         {
             if (dontNotifyWhenFailed)
                 return TnmsCommandValidationResult.FailedIgnoreDefault;
             
             return TnmsCommandValidationResult.Failed;
         }
+        
+        
+        targets.Clear();
+        targets.AddRange(adminCheckedTargets);
         
         _lastFoundTargets = foundTargets;
         return TnmsCommandValidationResult.Success;
@@ -85,7 +91,7 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
     /// Gets the last found targets from validation
     /// </summary>
     /// <returns>Array of found players or null if no validation was performed or failed</returns>
-    public List<IGameClient>? GetFoundTargets() => _lastFoundTargets;
+    public ITargetingResult? GetFoundTargets() => _lastFoundTargets;
 
     /// <summary>
     /// Gets the last target string that was validated

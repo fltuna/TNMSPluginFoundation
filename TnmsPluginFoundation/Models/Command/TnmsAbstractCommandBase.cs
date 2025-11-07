@@ -46,7 +46,6 @@ public abstract class TnmsAbstractCommandBase(IServiceProvider provider): Plugin
     /// </summary>
     /// <param name="player">CCSPlayerController</param>
     /// <param name="commandInfo">CommandInfo</param>
-    /// <param name="commandAction">ECommandAction</param>
     public ECommandAction Execute(IGameClient? player, StringCommand commandInfo)
     {
         var validator = GetValidator();

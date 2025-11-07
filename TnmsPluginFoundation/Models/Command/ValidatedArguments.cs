@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Sharp.Shared.Objects;
+using TnmsExtendableTargeting.Shared;
 
 namespace TnmsPluginFoundation.Models.Command;
 
@@ -23,6 +25,12 @@ public class ValidatedArguments
             if (value is T typedValue)
                 return typedValue;
             
+            // ITargetingResult → List<IGameClient> conversion for backwards compatibility for ExtendableTargetValidator
+            if (typeof(T) == typeof(List<IGameClient>) && value is ITargetingResult result)
+            {
+                return (T)(object)result.GetTargets();
+            }
+            
             if (value != null && typeof(T) != typeof(object))
             {
                 try
@@ -44,7 +52,7 @@ public class ValidatedArguments
     /// </summary>
     /// <param name="index">Index of the argument (0-based)</param>
     /// <param name="value">Value of the argument</param>
-    public void SetArgument(int index, object? value)
+    internal void SetArgument(int index, object? value)
     {
         _indexedArguments[index] = value;
     }
