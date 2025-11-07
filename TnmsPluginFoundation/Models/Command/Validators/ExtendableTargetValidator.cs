@@ -15,7 +15,7 @@ namespace TnmsPluginFoundation.Models.Command.Validators;
 /// <param name="argumentIndex">Index of the argument containing the target string (1-based)</param>
 /// <param name="dontNotifyWhenFailed">When true, it will return TnmsCommandValidationResult.FailedIgnoreDefault to avoid print default failure message</param>
 /// <param name="bypassAdminCheck">When true, it will bypass admin check</param>
-public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFailed = false, bool bypassAdminCheck = false): CommandValidatorBase
+public sealed class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFailed = false, bool bypassAdminCheck = false): CommandValidatorBase, ICommandArgumentValidator
 {
     private ITargetingResult? _lastFoundTargets;
     private string? _lastTargetString;
@@ -28,7 +28,9 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
     /// Message of validation failure
     /// </summary>
     public override string ValidationFailureMessage => "Common.Validation.Failure.ExtendedTarget";
-    
+
+    public int ArgumentIndex => argumentIndex;
+
     /// <summary>
     /// Find players by using ExtendedTargeting. This validator fails when if no players found
     /// </summary>
@@ -98,12 +100,6 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
     /// </summary>
     /// <returns>Target string or null if no validation was performed</returns>
     public string? GetLastTargetString() => _lastTargetString;
-
-    /// <summary>
-    /// Gets the argument index this validator is configured to check
-    /// </summary>
-    /// <returns>Argument index (1-based)</returns>
-    public int GetArgumentIndex() => argumentIndex;
 
     /// <summary>
     /// Extracts validated arguments after successful validation

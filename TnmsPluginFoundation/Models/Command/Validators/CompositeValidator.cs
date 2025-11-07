@@ -130,41 +130,6 @@ public class CompositeValidator : ICommandValidator
     }
 
     /// <summary>
-    /// Gets the first ranged value converted to the specified type
-    /// </summary>
-    /// <typeparam name="T">Target type</typeparam>
-    /// <returns>Converted value or null</returns>
-    public T? GetRangedValueAs<T>() where T : struct
-    {
-        var rangedValidator = GetRangedValidator();
-        return rangedValidator?.GetParsedValueAs<T>();
-    }
-
-    /// <summary>
-    /// Gets all ranged values converted to the specified type
-    /// </summary>
-    /// <typeparam name="T">Target type</typeparam>
-    /// <returns>Array of converted values</returns>
-    public T?[] GetAllRangedValuesAs<T>() where T : struct
-    {
-        return GetAllRangedValidators()
-            .Select(v => v.GetParsedValueAs<T>())
-            .ToArray();
-    }
-
-    /// <summary>
-    /// Gets ranged value from validator at specific argument index
-    /// </summary>
-    /// <typeparam name="T">Target type</typeparam>
-    /// <param name="argumentIndex">Argument index to find</param>
-    /// <returns>Converted value or null</returns>
-    public T? GetRangedValueAs<T>(int argumentIndex) where T : struct
-    {
-        return GetAllRangedValidators()
-            .FirstOrDefault(v => HasArgumentIndex(v, argumentIndex))?.GetParsedValueAs<T>();
-    }
-
-    /// <summary>
     /// Checks if a ranged validator has the specified argument index
     /// </summary>
     /// <param name="validator">Validator to check</param>

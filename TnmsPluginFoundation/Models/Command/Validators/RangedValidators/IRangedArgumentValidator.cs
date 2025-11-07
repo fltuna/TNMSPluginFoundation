@@ -1,18 +1,15 @@
-﻿using Sharp.Shared.Objects;
+﻿using System;
+using System.Numerics;
+using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 
 namespace TnmsPluginFoundation.Models.Command.Validators.RangedValidators;
 
 /// <summary>
-/// Specialized interface for ranged command validators
+/// Base interface for ranged command validators (non-generic)
 /// </summary>
-public interface IRangedArgumentValidator
+public interface IRangedArgumentValidator : ICommandArgumentValidator
 {
-    /// <summary>
-    /// Name of this validator for identification purposes
-    /// </summary>
-    string ValidatorName { get; }
-
     /// <summary>
     /// Validates range-specific command input
     /// </summary>
@@ -43,11 +40,18 @@ public interface IRangedArgumentValidator
     /// </summary>
     /// <returns>Parsed value as object or null</returns>
     object? GetParsedValueAsObject();
-        
+}
+
+/// <summary>
+/// Specialized interface for ranged command validators
+/// </summary>
+public interface IRangedArgumentValidator<T> : IRangedArgumentValidator, ICommandValueArgumentValidator<T?>
+    where T : struct, INumber<T>, IComparable<T>
+{
     /// <summary>
     /// Gets the parsed value converted to the specified type
     /// </summary>
-    /// <typeparam name="T">Target type</typeparam>
+    /// <typeparam name="TResult">Target type</typeparam>
     /// <returns>Converted value or null</returns>
-    T? GetParsedValueAs<T>() where T : struct;
+    TResult? GetParsedValueAs<TResult>() where TResult : struct;
 }

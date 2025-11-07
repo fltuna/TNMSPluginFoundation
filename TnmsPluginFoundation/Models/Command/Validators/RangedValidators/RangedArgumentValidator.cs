@@ -9,11 +9,9 @@ namespace TnmsPluginFoundation.Models.Command.Validators.RangedValidators;
 /// Validates command arguments within a specified numeric range
 /// </summary>
 /// <typeparam name="T">Numeric type to validate</typeparam>
-public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedArgumentValidator 
+public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedArgumentValidator<T>
     where T : struct, INumber<T>, IComparable<T>
 {
-    private readonly T _min;
-    private readonly T _max;
     private readonly int _argumentIndex;
     private readonly bool _dontNotifyWhenFailed;
     private readonly bool _isOptional;
@@ -21,6 +19,9 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     private T? _lastParsedValue;
     private TnmsRangedCommandValidationResult _lastRangedResult;
     private bool _isUsingDefaultValue;
+
+    public T? Max { get; }
+    public T? Min { get; }
 
     /// <summary>
     /// Whether to notify when validation fails
@@ -36,8 +37,8 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// <param name="dontNotifyWhenFailed">Whether to suppress failure notifications</param>
     public RangedArgumentValidator(T min, T max, int argumentIndex = 2, bool dontNotifyWhenFailed = false)
     {
-        _min = min;
-        _max = max;
+        Min = min;
+        Max = max;
         _argumentIndex = argumentIndex;
         _dontNotifyWhenFailed = dontNotifyWhenFailed;
         _isOptional = false;
@@ -54,8 +55,8 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// <param name="dontNotifyWhenFailed">Whether to suppress failure notifications</param>
     public RangedArgumentValidator(T min, T max, int argumentIndex, T defaultValue, bool dontNotifyWhenFailed = false)
     {
-        _min = min;
-        _max = max;
+        Min = min;
+        Max = max;
         _argumentIndex = argumentIndex;
         _dontNotifyWhenFailed = dontNotifyWhenFailed;
         _isOptional = true;
@@ -71,6 +72,8 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// Message of validation failure
     /// </summary>
     public override string ValidationFailureMessage => "Common.Validation.Failure.Ranged";
+
+    public int ArgumentIndex => _argumentIndex;
 
     /// <summary>
     /// Validates command input for ICommandValidator interface
@@ -125,13 +128,13 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
         _lastParsedValue = value;
         _isUsingDefaultValue = false; // Argument was provided
 
-        if (value.CompareTo(_min) < 0)
+        if (value.CompareTo(Min) < 0)
         {
             _lastRangedResult = TnmsRangedCommandValidationResult.FailedLowerThanExpected;
             return _lastRangedResult;
         }
         
-        if (value.CompareTo(_max) > 0)
+        if (value.CompareTo(Max) > 0)
         {
             _lastRangedResult = TnmsRangedCommandValidationResult.FailedHigherThanExpected;
             return _lastRangedResult;
@@ -151,7 +154,7 @@ public sealed class RangedArgumentValidator<T> : CommandValidatorBase, IRangedAr
     /// Gets description of the valid range
     /// </summary>
     /// <returns>String representation of the range</returns>
-    public string GetRangeDescription() => $"[{_min} - {_max}]";
+    public string GetRangeDescription() => $"[{Min} - {Max}]";
 
     /// <summary>
     /// Gets the parsed value as an object
