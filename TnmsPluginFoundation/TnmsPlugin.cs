@@ -331,23 +331,36 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     }
 
     /// <summary>
-    /// Automatically discovers and registers all PluginModuleBase-derived classes under the specified namespace.
+    /// Helper method to discover types under a specific namespace that inherit from a base type.
     /// </summary>
-    /// <param name="nameSpace">The namespace to search for modules</param>
-    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
-    protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    /// <typeparam name="TBase">The base type to search for</typeparam>
+    /// <param name="assembly">The assembly to search in</param>
+    /// <param name="nameSpace">The namespace to search</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces</param>
+    /// <returns>List of types that match the criteria</returns>
+    private List<Type> GetTypesUnderNamespace<TBase>(Assembly assembly, string nameSpace, bool includeSubNamespaces)
     {
-        var assembly = Assembly.GetCallingAssembly();
-
-        var moduleTypes = assembly.GetTypes()
+        return assembly.GetTypes()
             .Where(t => t.Namespace != null &&
                         (includeSubNamespaces
                             ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
                             : t.Namespace == nameSpace) &&
                         t.IsClass &&
                         !t.IsAbstract &&
-                        t.IsSubclassOf(typeof(PluginModuleBase)))
+                        t.IsSubclassOf(typeof(TBase)))
             .ToList();
+    }
+
+    /// <summary>
+    /// Automatically discovers and registers all PluginModuleBase-derived classes under the specified namespace.
+    /// </summary>
+    /// <param name="nameSpace">The namespace to search for modules</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    {
+        var assembly = GetType().Assembly;
+
+        var moduleTypes = GetTypesUnderNamespace<PluginModuleBase>(assembly, nameSpace, includeSubNamespaces);
 
         if (moduleTypes.Count == 0)
         {
@@ -486,17 +499,9 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
     public void AddTnmsCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
-        var assembly = Assembly.GetCallingAssembly();
+        var assembly = GetType().Assembly;
 
-        var commandTypes = assembly.GetTypes()
-            .Where(t => t.Namespace != null &&
-                        (includeSubNamespaces
-                            ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
-                            : t.Namespace == nameSpace) &&
-                        t.IsClass &&
-                        !t.IsAbstract &&
-                        t.IsSubclassOf(typeof(TnmsAbstractCommandBase)))
-            .ToList();
+        var commandTypes = GetTypesUnderNamespace<TnmsAbstractCommandBase>(assembly, nameSpace, includeSubNamespaces);
 
         if (commandTypes.Count == 0)
         {
