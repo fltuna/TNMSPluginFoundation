@@ -484,7 +484,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// </summary>
     /// <param name="nameSpace">The namespace to search for commands</param>
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
-    protected void AddCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    public void AddTnmsCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
         var assembly = Assembly.GetCallingAssembly();
 
