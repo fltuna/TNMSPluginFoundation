@@ -477,6 +477,63 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     }
 
     /// <summary>
+    /// Automatically discovers and registers all TnmsAbstractCommandBase-derived classes under the specified namespace.
+    /// </summary>
+    /// <param name="nameSpace">The namespace to search for commands</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    protected void RegisterCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    {
+        var assembly = Assembly.GetCallingAssembly();
+
+        var commandTypes = assembly.GetTypes()
+            .Where(t => t.Namespace != null &&
+                        (includeSubNamespaces
+                            ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
+                            : t.Namespace == nameSpace) &&
+                        t.IsClass &&
+                        !t.IsAbstract &&
+                        t.IsSubclassOf(typeof(TnmsAbstractCommandBase)))
+            .ToList();
+
+        if (commandTypes.Count == 0)
+        {
+            Logger.LogWarning($"No commands found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+            return;
+        }
+
+        Logger.LogInformation($"Found {commandTypes.Count} command(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+
+        foreach (var commandType in commandTypes)
+        {
+            try
+            {
+                // Check if the command has a constructor that accepts IServiceProvider
+                var constructor = commandType.GetConstructor(
+                    BindingFlags.Public | BindingFlags.Instance,
+                    null,
+                    new[] { typeof(IServiceProvider) },
+                    null);
+
+                if (constructor == null)
+                {
+                    Logger.LogError($"Command '{commandType.Name}' must have a public constructor with (IServiceProvider) parameter.");
+                    continue;
+                }
+
+                // Create command instance
+                var command = (TnmsAbstractCommandBase)Activator.CreateInstance(commandType, ServiceProvider)!;
+
+                // Register the command
+                AddTnmsCommand(command);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Failed to register command '{commandType.Name}'");
+            }
+        }
+    }
+
+    /// <summary>
     /// Remove TnmsAbstracted command to ModSharp
     /// </summary>
     /// <param name="command">Classes that inherited TnmsAbstractCommandBase</param>
