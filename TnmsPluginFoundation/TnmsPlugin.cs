@@ -334,13 +334,16 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Automatically discovers and registers all PluginModuleBase-derived classes under the specified namespace.
     /// </summary>
     /// <param name="nameSpace">The namespace to search for modules</param>
-    protected void RegisterModulesUnderNamespace(string nameSpace)
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
         var assembly = Assembly.GetCallingAssembly();
 
         var moduleTypes = assembly.GetTypes()
             .Where(t => t.Namespace != null &&
-                        t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal) &&
+                        (includeSubNamespaces
+                            ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
+                            : t.Namespace == nameSpace) &&
                         t.IsClass &&
                         !t.IsAbstract &&
                         t.IsSubclassOf(typeof(PluginModuleBase)))
@@ -348,11 +351,11 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
 
         if (moduleTypes.Count == 0)
         {
-            Logger.LogWarning($"No modules found under namespace '{nameSpace}'");
+            Logger.LogWarning($"No modules found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
             return;
         }
 
-        Logger.LogInformation($"Found {moduleTypes.Count} module(s) under namespace '{nameSpace}' (hotReload: {_hotReload})");
+        Logger.LogInformation($"Found {moduleTypes.Count} module(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")} (hotReload: {_hotReload})");
 
         foreach (var moduleType in moduleTypes)
         {
