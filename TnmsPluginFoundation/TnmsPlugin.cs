@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -286,36 +287,94 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     private readonly HashSet<PluginModuleBase> _loadedModules = [];
 
     /// <summary>
-    /// Register module without hot reload state.
+    /// Register module.
     /// </summary>
     /// <typeparam name="T">Any classes that inherited a PluginModuleBase</typeparam>
     protected T RegisterModule<T>() where T : PluginModuleBase
     {
-        var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
+        var moduleType = typeof(T);
+
+        var hotReloadConstructor = moduleType.GetConstructor(
+            BindingFlags.Public | BindingFlags.Instance,
+            null,
+            new[] { typeof(IServiceProvider), typeof(bool) },
+            null);
+
+        var standardConstructor = moduleType.GetConstructor(
+            BindingFlags.Public | BindingFlags.Instance,
+            null,
+            new[] { typeof(IServiceProvider) },
+            null);
+
+        T module;
+        if (hotReloadConstructor != null)
+        {
+            module = (T)Activator.CreateInstance(moduleType, ServiceProvider, _hotReload)!;
+        }
+        else if (standardConstructor != null)
+        {
+            module = (T)Activator.CreateInstance(moduleType, ServiceProvider)!;
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Module '{moduleType.Name}' must have a public constructor with either " +
+                $"(IServiceProvider) or (IServiceProvider, bool) parameters.");
+        }
+
         _loadedModules.Add(module);
         module.Initialize();
         module.RegisterServices(ServiceCollection);
-        // Rebuild, because some modules are depend on other modules.
-        // And if the module is API or something, required before call OnAllPluginsLoaded.
         RebuildServiceProvider();
         Logger.LogInformation($"{module.PluginModuleName} has been initialized");
         return module;
     }
 
     /// <summary>
-    /// Register module with hot reload state.
+    /// Automatically discovers and registers all PluginModuleBase-derived classes under the specified namespace.
     /// </summary>
-    /// <typeparam name="T">Any classes that inherited a PluginModuleBase</typeparam>
-    protected void RegisterModule<T>(bool hotReload) where T : PluginModuleBase
+    /// <param name="nameSpace">The namespace to search for modules</param>
+    protected void RegisterModulesUnderNamespace(string nameSpace)
     {
-        var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider, hotReload)!;
-        _loadedModules.Add(module);
-        module.Initialize();
-        module.RegisterServices(ServiceCollection);
-        // Rebuild, because some modules are depend on other modules.
-        // And if the module is API or something, required before call OnAllPluginsLoaded.
-        RebuildServiceProvider();
-        Logger.LogInformation($"{module.PluginModuleName} has been initialized");
+        var assembly = Assembly.GetCallingAssembly();
+
+        var moduleTypes = assembly.GetTypes()
+            .Where(t => t.Namespace != null &&
+                        t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal) &&
+                        t.IsClass &&
+                        !t.IsAbstract &&
+                        t.IsSubclassOf(typeof(PluginModuleBase)))
+            .ToList();
+
+        if (moduleTypes.Count == 0)
+        {
+            Logger.LogWarning($"No modules found under namespace '{nameSpace}'");
+            return;
+        }
+
+        Logger.LogInformation($"Found {moduleTypes.Count} module(s) under namespace '{nameSpace}' (hotReload: {_hotReload})");
+
+        foreach (var moduleType in moduleTypes)
+        {
+            try
+            {
+                var registerMethod = GetType()
+                    .GetMethod(nameof(RegisterModule), BindingFlags.NonPublic | BindingFlags.Instance)
+                    ?.MakeGenericMethod(moduleType);
+
+                if (registerMethod == null)
+                {
+                    Logger.LogError($"Failed to get RegisterModule method for type '{moduleType.Name}'");
+                    continue;
+                }
+
+                registerMethod.Invoke(this, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Failed to register module '{moduleType.Name}'");
+            }
+        }
     }
 
     private void CallModulesAllPluginsLoaded()
