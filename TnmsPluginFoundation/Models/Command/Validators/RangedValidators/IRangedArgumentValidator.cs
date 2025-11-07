@@ -45,7 +45,7 @@ public interface IRangedArgumentValidator : ICommandArgumentValidator
 /// <summary>
 /// Specialized interface for ranged command validators
 /// </summary>
-public interface IRangedArgumentValidator<T> : IRangedArgumentValidator, ICommandValueArgumentValidator<T>
+public interface IRangedArgumentValidator<T> : IRangedArgumentValidator, ICommandValueArgumentValidator<T?>
     where T : struct, INumber<T>, IComparable<T>
 {
     /// <summary>

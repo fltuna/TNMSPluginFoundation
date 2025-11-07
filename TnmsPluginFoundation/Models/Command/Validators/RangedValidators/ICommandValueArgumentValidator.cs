@@ -9,11 +9,11 @@ public interface ICommandValueArgumentValidator<T>: ICommandArgumentValidator
     /// Returns maximum bounds for this validator
     /// </summary>
     /// <returns></returns>
-    public T? GetMax();
+    public T? Max { get; }
     
     /// <summary>
     /// Returns minimum bounds for this validator
     /// </summary>
     /// <returns></returns>
-    public T? GetMin();
+    public T? Min { get; }
 }
