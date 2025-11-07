@@ -3,17 +3,15 @@
 /// <summary>
 /// Base interface for command validators
 /// </summary>
-public interface ICommandValueArgumentValidator<T>: ICommandArgumentValidator
+public interface ICommandValueArgumentValidator<out T>: ICommandArgumentValidator
 {
     /// <summary>
     /// Returns maximum bounds for this validator
     /// </summary>
-    /// <returns></returns>
-    public T? Max { get; }
+    T? Max { get; }
     
     /// <summary>
     /// Returns minimum bounds for this validator
     /// </summary>
-    /// <returns></returns>
-    public T? Min { get; }
+    T? Min { get; }
 }
