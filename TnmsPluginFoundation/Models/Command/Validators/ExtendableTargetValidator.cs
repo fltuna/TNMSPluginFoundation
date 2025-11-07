@@ -66,8 +66,8 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
             return TnmsCommandValidationResult.Success;
         }
 
-        var adminCheckedTargets = foundTargets
-            .GetTargets()
+        var targets = foundTargets.GetTargets();
+        var adminCheckedTargets = targets
             .Where(target => TnmsPlugin.AdminManager.ClientCanTarget(client, target))
             .ToList();
         
@@ -80,8 +80,8 @@ public class ExtendableTargetValidator(int argumentIndex, bool dontNotifyWhenFai
         }
         
         
-        foundTargets.GetTargets().Clear();
-        foundTargets.GetTargets().AddRange(adminCheckedTargets);
+        targets.Clear();
+        targets.AddRange(adminCheckedTargets);
         
         _lastFoundTargets = foundTargets;
         return TnmsCommandValidationResult.Success;
