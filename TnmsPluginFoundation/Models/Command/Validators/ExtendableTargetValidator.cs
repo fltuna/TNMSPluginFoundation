@@ -102,12 +102,6 @@ public sealed class ExtendableTargetValidator(int argumentIndex, bool dontNotify
     public string? GetLastTargetString() => _lastTargetString;
 
     /// <summary>
-    /// Gets the argument index this validator is configured to check
-    /// </summary>
-    /// <returns>Argument index (1-based)</returns>
-    public int GetArgumentIndex() => argumentIndex;
-
-    /// <summary>
     /// Extracts validated arguments after successful validation
     /// </summary>
     /// <param name="player">CCSPlayerController</param>
