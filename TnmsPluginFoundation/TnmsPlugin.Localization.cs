@@ -31,8 +31,11 @@ public abstract partial class TnmsPlugin
     /// <param name="client">Player instance</param>
     /// <param name="localizationKey">Localization Key</param>
     /// <returns>Translated result as player's language</returns>
-    public string LocalizeStringForPlayer(IGameClient client, string localizationKey)
+    public string LocalizeStringForPlayer(IGameClient? client, string localizationKey)
     {
+        if  (client == null)
+            return Localizer[localizationKey];
+        
         return Localizer.ForClient(client, localizationKey);
     }
     
@@ -43,8 +46,11 @@ public abstract partial class TnmsPlugin
     /// <param name="localizationKey">Localization Key</param>
     /// <param name="args">Any args that can be use ToString()</param>
     /// <returns>Translated result as player's language</returns>
-    public string LocalizeStringForPlayer(IGameClient client, string localizationKey, params object[] args)
+    public string LocalizeStringForPlayer(IGameClient? client, string localizationKey, params object[] args)
     {
+        if  (client == null)
+            return Localizer[localizationKey];
+        
         return Localizer.ForClient(client, localizationKey, args);
     }
 }
