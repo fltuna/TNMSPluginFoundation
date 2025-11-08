@@ -314,12 +314,6 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <returns>List of types that match the criteria</returns>
     private List<Type> GetTypesUnderNamespace<TBase>(Assembly assembly, string nameSpace, bool includeSubNamespaces)
     {
-        if (string.IsNullOrWhiteSpace(nameSpace))
-            throw new ArgumentException("Namespace cannot be null or whitespace.", nameof(nameSpace));
-
-        if (nameSpace.EndsWith(".", StringComparison.Ordinal))
-            throw new ArgumentException("Namespace should not end with a period.", nameof(nameSpace));
-
         try
         {
             return assembly.GetTypes()
@@ -391,6 +385,12 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
     protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
+        if (string.IsNullOrWhiteSpace(nameSpace))
+            throw new ArgumentException("Namespace cannot be null or whitespace.", nameof(nameSpace));
+
+        if (nameSpace.EndsWith(".", StringComparison.Ordinal))
+            throw new ArgumentException("Namespace should not end with a period.", nameof(nameSpace));
+
         DiscoverAndProcessTypes<PluginModuleBase>(nameSpace, includeSubNamespaces, "module", moduleType =>
         {
             var registerMethod = GetType()
@@ -516,6 +516,12 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
     public void AddTnmsCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
+        if (string.IsNullOrWhiteSpace(nameSpace))
+            throw new ArgumentException("Namespace cannot be null or whitespace.", nameof(nameSpace));
+
+        if (nameSpace.EndsWith(".", StringComparison.Ordinal))
+            throw new ArgumentException("Namespace should not end with a period.", nameof(nameSpace));
+
         DiscoverAndProcessTypes<TnmsAbstractCommandBase>(nameSpace, includeSubNamespaces, "command", commandType =>
         {
             var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
