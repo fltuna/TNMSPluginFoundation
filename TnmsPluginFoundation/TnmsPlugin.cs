@@ -294,33 +294,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         var moduleType = typeof(T);
 
-        var hotReloadConstructor = moduleType.GetConstructor(
-            BindingFlags.Public | BindingFlags.Instance,
-            null,
-            new[] { typeof(IServiceProvider), typeof(bool) },
-            null);
-
-        var standardConstructor = moduleType.GetConstructor(
-            BindingFlags.Public | BindingFlags.Instance,
-            null,
-            new[] { typeof(IServiceProvider) },
-            null);
-
-        T module;
-        if (hotReloadConstructor != null)
-        {
-            module = (T)Activator.CreateInstance(moduleType, ServiceProvider, _hotReload)!;
-        }
-        else if (standardConstructor != null)
-        {
-            module = (T)Activator.CreateInstance(moduleType, ServiceProvider)!;
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"Module '{moduleType.Name}' must have a public constructor with either " +
-                $"(IServiceProvider) or (IServiceProvider, bool) parameters.");
-        }
+        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
 
         _loadedModules.Add(module);
         module.Initialize();
@@ -347,7 +321,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
                             : t.Namespace == nameSpace) &&
                         t.IsClass &&
                         !t.IsAbstract &&
-                        t.IsSubclassOf(typeof(TBase)))
+                        typeof(TBase).IsAssignableFrom(t))
             .ToList();
     }
 
@@ -388,6 +362,10 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
             }
             catch (Exception ex)
             {
+                if (ex is TargetInvocationException { InnerException: { } innerException })
+                {
+                    ex = innerException;
+                }
                 Logger.LogError(ex, $"Failed to register module '{moduleType.Name}'");
             }
         }
@@ -515,27 +493,16 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         {
             try
             {
-                // Check if the command has a constructor that accepts IServiceProvider
-                var constructor = commandType.GetConstructor(
-                    BindingFlags.Public | BindingFlags.Instance,
-                    null,
-                    new[] { typeof(IServiceProvider) },
-                    null);
+                var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
 
-                if (constructor == null)
-                {
-                    Logger.LogError($"Command '{commandType.Name}' must have a public constructor with (IServiceProvider) parameter.");
-                    continue;
-                }
-
-                // Create command instance
-                var command = (TnmsAbstractCommandBase)Activator.CreateInstance(commandType, ServiceProvider)!;
-
-                // Register the command
                 AddTnmsCommand(command);
             }
             catch (Exception ex)
             {
+                if (ex is TargetInvocationException { InnerException: { } innerException })
+                {
+                    ex = innerException;
+                }
                 Logger.LogError(ex, $"Failed to register command '{commandType.Name}'");
             }
         }
