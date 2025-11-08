@@ -9,7 +9,7 @@ using TnmsPluginFoundation.Models.Plugin;
 
 namespace TnmsPluginFoundation.Example.Modules.TestEventListener;
 
-public class TestEventListener(IServiceProvider serviceProvider) : PluginModuleBase(serviceProvider)
+public class TestEventListener(IServiceProvider serviceProvider, bool hotReload) : PluginModuleBase(serviceProvider, hotReload)
 {
     public override string PluginModuleName => "TestEventListener";
     public override string ModuleChatPrefix => "TestEventListener";

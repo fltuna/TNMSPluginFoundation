@@ -311,7 +311,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         var moduleType = typeof(T);
 
-        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
+        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, ServiceProvider, _hotReload);
 
         _loadedModules.Add(module);
         module.Initialize();
@@ -535,7 +535,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         DiscoverAndProcessTypes<TnmsAbstractCommandBase>(nameSpace, includeSubNamespaces, "command", commandType =>
         {
-            var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
+            var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType, ServiceProvider);
 
             AddTnmsCommand(command);
         });

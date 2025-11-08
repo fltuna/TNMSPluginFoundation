@@ -12,8 +12,14 @@ namespace TnmsPluginFoundation.Models.Plugin;
 /// This is a base class for all plugin modules. you can make custom module class from this.
 /// </summary>
 /// <param name="serviceProvider">Microsoft.Extensions.DependencyInjection</param>
-public abstract class PluginModuleBase(IServiceProvider serviceProvider) : PluginTranslatableFeatureBase(serviceProvider), IPluginModule
+/// <param name="hotReload">Is this module being loaded during a hot reload?</param>
+public abstract class PluginModuleBase(IServiceProvider serviceProvider, bool hotReload) : PluginTranslatableFeatureBase(serviceProvider), IPluginModule
 {
+    /// <summary>
+    /// Indicates whether this module was loaded during a hot reload
+    /// </summary>
+    protected bool HotReload { get; } = hotReload;
+
     /// <summary>
     /// This string is used to saving config and internal management.<br/>
     /// When we specify HelloModule as name, then ConVar config name become HelloModule.cfg
