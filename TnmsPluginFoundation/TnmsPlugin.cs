@@ -294,7 +294,21 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         var moduleType = typeof(T);
 
-        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
+        var hotReloadConstructor = moduleType.GetConstructor(
+            BindingFlags.Public | BindingFlags.Instance,
+            null,
+            new[] { typeof(IServiceProvider), typeof(bool) },
+            null);
+
+        T module;
+        if (hotReloadConstructor != null)
+        {
+            module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
+        }
+        else
+        {
+            module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType);
+        }
 
         _loadedModules.Add(module);
         module.Initialize();
@@ -314,15 +328,68 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <returns>List of types that match the criteria</returns>
     private List<Type> GetTypesUnderNamespace<TBase>(Assembly assembly, string nameSpace, bool includeSubNamespaces)
     {
-        return assembly.GetTypes()
-            .Where(t => t.Namespace != null &&
-                        (includeSubNamespaces
-                            ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
-                            : t.Namespace == nameSpace) &&
-                        t.IsClass &&
-                        !t.IsAbstract &&
-                        typeof(TBase).IsAssignableFrom(t))
-            .ToList();
+        try
+        {
+            return assembly.GetTypes()
+                .Where(t => t.Namespace != null &&
+                            (includeSubNamespaces
+                                ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
+                                : t.Namespace == nameSpace) &&
+                            t.IsClass &&
+                            !t.IsAbstract &&
+                            typeof(TBase).IsAssignableFrom(t))
+                .ToList();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            Logger.LogError(ex, "Failed to load types from assembly {assemblyName} while searching for {baseType} under namespace {namespace}",
+                assembly.FullName, typeof(TBase).Name, nameSpace);
+
+            foreach (var loaderException in ex.LoaderExceptions.Where(e => e != null))
+            {
+                Logger.LogError(loaderException, "Loader exception: {loaderExceptionMessage}", loaderException!.Message);
+            }
+
+            return new List<Type>();
+        }
+    }
+
+    /// <summary>
+    /// Helper method to discover and process types under a namespace.
+    /// </summary>
+    /// <typeparam name="TBase">The base type to search for</typeparam>
+    /// <param name="nameSpace">The namespace to search</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces</param>
+    /// <param name="typeDisplayName">Display name for logging (e.g., "module", "command")</param>
+    /// <param name="processType">Action to process each discovered type</param>
+    private void DiscoverAndProcessTypes<TBase>(string nameSpace, bool includeSubNamespaces, string typeDisplayName, Action<Type> processType)
+    {
+        var assembly = GetType().Assembly;
+        var types = GetTypesUnderNamespace<TBase>(assembly, nameSpace, includeSubNamespaces);
+
+        if (types.Count == 0)
+        {
+            Logger.LogWarning($"No {typeDisplayName}s found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+            return;
+        }
+
+        Logger.LogInformation($"Found {types.Count} {typeDisplayName}(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+
+        foreach (var type in types)
+        {
+            try
+            {
+                processType(type);
+            }
+            catch (Exception ex)
+            {
+                if (ex is TargetInvocationException { InnerException: { } innerException })
+                {
+                    ex = innerException;
+                }
+                Logger.LogError(ex, $"Failed to register {typeDisplayName} '{type.Name}'");
+            }
+        }
     }
 
     /// <summary>
@@ -332,43 +399,23 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
     protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
-        var assembly = GetType().Assembly;
-
-        var moduleTypes = GetTypesUnderNamespace<PluginModuleBase>(assembly, nameSpace, includeSubNamespaces);
-
-        if (moduleTypes.Count == 0)
+        DiscoverAndProcessTypes<PluginModuleBase>(nameSpace, includeSubNamespaces, "module", moduleType =>
         {
-            Logger.LogWarning($"No modules found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
-            return;
-        }
+            var registerMethod = GetType()
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .SingleOrDefault(m => m.Name == nameof(RegisterModule) &&
+                                     m.IsGenericMethodDefinition &&
+                                     m.GetParameters().Length == 0)
+                ?.MakeGenericMethod(moduleType);
 
-        Logger.LogInformation($"Found {moduleTypes.Count} module(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")} (hotReload: {_hotReload})");
-
-        foreach (var moduleType in moduleTypes)
-        {
-            try
+            if (registerMethod == null)
             {
-                var registerMethod = GetType()
-                    .GetMethod(nameof(RegisterModule), BindingFlags.NonPublic | BindingFlags.Instance)
-                    ?.MakeGenericMethod(moduleType);
-
-                if (registerMethod == null)
-                {
-                    Logger.LogError($"Failed to get RegisterModule method for type '{moduleType.Name}'");
-                    continue;
-                }
-
-                registerMethod.Invoke(this, null);
+                Logger.LogError($"Failed to get RegisterModule method for type '{moduleType.Name}'");
+                return;
             }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException { InnerException: { } innerException })
-                {
-                    ex = innerException;
-                }
-                Logger.LogError(ex, $"Failed to register module '{moduleType.Name}'");
-            }
-        }
+
+            registerMethod.Invoke(this, null);
+        });
     }
 
     private void CallModulesAllPluginsLoaded()
@@ -477,35 +524,12 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
     public void AddTnmsCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
     {
-        var assembly = GetType().Assembly;
-
-        var commandTypes = GetTypesUnderNamespace<TnmsAbstractCommandBase>(assembly, nameSpace, includeSubNamespaces);
-
-        if (commandTypes.Count == 0)
+        DiscoverAndProcessTypes<TnmsAbstractCommandBase>(nameSpace, includeSubNamespaces, "command", commandType =>
         {
-            Logger.LogWarning($"No commands found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
-            return;
-        }
+            var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
 
-        Logger.LogInformation($"Found {commandTypes.Count} command(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
-
-        foreach (var commandType in commandTypes)
-        {
-            try
-            {
-                var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
-
-                AddTnmsCommand(command);
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException { InnerException: { } innerException })
-                {
-                    ex = innerException;
-                }
-                Logger.LogError(ex, $"Failed to register command '{commandType.Name}'");
-            }
-        }
+            AddTnmsCommand(command);
+        });
     }
 
     /// <summary>
