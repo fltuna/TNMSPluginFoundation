@@ -3,7 +3,7 @@ using TnmsPluginFoundation.Models.Plugin;
 
 namespace TnmsPluginFoundation.Example.Modules.UtilitiyTest;
 
-public class UtilitiyTest(IServiceProvider serviceProvider) : PluginModuleBase(serviceProvider)
+public class UtilitiyTest(IServiceProvider serviceProvider, bool hotReload) : PluginModuleBase(serviceProvider, hotReload)
 {
     public override string PluginModuleName => "UtilitiyTest";
     public override string ModuleChatPrefix => "[TEST}";

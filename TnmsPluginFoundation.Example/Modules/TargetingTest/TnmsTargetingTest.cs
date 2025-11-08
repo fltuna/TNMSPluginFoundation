@@ -3,7 +3,7 @@ using TnmsPluginFoundation.Models.Plugin;
 
 namespace TnmsPluginFoundation.Example.Modules.TargetingTest;
 
-public class TnmsTargetingTest(IServiceProvider serviceProvider) : PluginModuleBase(serviceProvider)
+public class TnmsTargetingTest(IServiceProvider serviceProvider, bool hotReload) : PluginModuleBase(serviceProvider, hotReload)
 {
     public override string PluginModuleName => "TnmsPermissionTest";
     public override string ModuleChatPrefix => "";
