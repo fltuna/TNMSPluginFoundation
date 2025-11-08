@@ -294,21 +294,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         var moduleType = typeof(T);
 
-        var hotReloadConstructor = moduleType.GetConstructor(
-            BindingFlags.Public | BindingFlags.Instance,
-            null,
-            new[] { typeof(IServiceProvider), typeof(bool) },
-            null);
-
-        T module;
-        if (hotReloadConstructor != null)
-        {
-            module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
-        }
-        else
-        {
-            module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType);
-        }
+        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
 
         _loadedModules.Add(module);
         module.Initialize();
