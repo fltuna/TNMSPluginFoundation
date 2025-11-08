@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using Sharp.Shared.Managers;
+using Sharp.Shared.Objects;
 using TnmsAdministrationPlatform.Shared;
 using TnmsExtendableTargeting.Shared;
 using TnmsLocalizationPlatform.Shared;
@@ -46,6 +47,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         GameData = _sharedSystem.GetModSharp().GetGameData();
         AssetPath = Path.Combine(sharpPath, "assets");
     }
+
     private readonly bool _hotReload;
 
     /// <summary>
@@ -90,7 +92,12 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Plugin Logger
     /// </summary>
     public ILogger Logger { get; }
-    
+
+    /// <summary>
+    /// Tnms Logger
+    /// </summary>
+    public TnmsLogger TnmsLogger { get; private set; } = null!;
+
     /// <summary>
     /// ModSharp shared gamedata system
     /// </summary>
@@ -130,6 +137,14 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     /// Is PluginPrefix is translation key?
     /// </summary>
     public abstract bool UseTranslationKeyInPluginPrefix { get; }
+
+    public string GetPluginPrefix(IGameClient? client = null)
+    {
+        if (UseTranslationKeyInPluginPrefix)
+            return LocalizeStringForPlayer(client, PluginPrefix);
+        
+        return PluginPrefix;
+    }
 
 
     /// <summary>
@@ -177,6 +192,8 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         
         // And build again
         RebuildServiceProvider();
+
+        TnmsLogger = new TnmsLogger(this);
         
         // Call customizable OnLoad method
         TnmsOnPluginLoad(_hotReload);
