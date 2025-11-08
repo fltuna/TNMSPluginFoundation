@@ -100,8 +100,8 @@ public class PluginTranslatableFeatureBase(IServiceProvider serviceProvider) : P
     protected string GetTextWithPluginPrefix(IGameClient? player, string text)
     {
         if (!Plugin.UseTranslationKeyInPluginPrefix)
-            return $"{Plugin.PluginPrefix} {text}";
+            return $" {Plugin.PluginPrefix} {text}";
         
-        return $"{LocalizeString(player, Plugin.PluginPrefix)} {text}";
+        return $" {LocalizeString(player, Plugin.PluginPrefix)} {text}";
     }
 }

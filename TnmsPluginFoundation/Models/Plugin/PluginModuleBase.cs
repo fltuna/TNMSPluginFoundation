@@ -233,9 +233,9 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider, bool ho
     protected string GetTextWithModulePrefix(IGameClient? player, string text)
     {
         if (!UseTranslationKeyInModuleChatPrefix)
-            return $"{ModuleChatPrefix} {text}";
+            return $" {ModuleChatPrefix} {text}";
 
-        return $"{LocalizeString(player, ModuleChatPrefix)} {text}";
+        return $" {LocalizeString(player, ModuleChatPrefix)} {text}";
     }
 
     /// <summary>

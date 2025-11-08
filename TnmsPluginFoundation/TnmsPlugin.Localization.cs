@@ -49,7 +49,7 @@ public abstract partial class TnmsPlugin
     public string LocalizeStringForPlayer(IGameClient? client, string localizationKey, params object[] args)
     {
         if  (client == null)
-            return Localizer[localizationKey];
+            return Localizer[localizationKey, args];
         
         return Localizer.ForClient(client, localizationKey, args);
     }

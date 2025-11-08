@@ -23,7 +23,7 @@ public sealed class TnmsLogger(TnmsPlugin plugin)
             // TODO: add permission check for manipulating details shown in admin action log
             
             var msg =
-                $"{plugin.GetPluginPrefix(gameClient)} {PlayerUtil.GetPlayerName(executor)}: {plugin.LocalizeStringForPlayer(gameClient, descriptionTranslationKey, descriptionParams)}";
+                $" {plugin.GetPluginPrefix(gameClient)} {PlayerUtil.GetPlayerName(executor)}: {plugin.LocalizeStringForPlayer(gameClient, descriptionTranslationKey, descriptionParams)}";
             
             gameClient.GetPlayerController()?.PrintToChat(msg);
         }
