@@ -29,7 +29,7 @@ public class TnmsPluginFoundationExample(
 
     protected override void TnmsOnPluginLoad(bool hotReload)
     {
-        RegisterModule<TestModule>(hotReload);
+        RegisterModule<TestModule>();
         RegisterModule<TestCommand>();
         RegisterModule<TnmsPermissionTest>();
         RegisterModule<TestEventListener>();

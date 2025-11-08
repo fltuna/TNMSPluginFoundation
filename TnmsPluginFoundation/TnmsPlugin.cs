@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -286,36 +287,127 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     private readonly HashSet<PluginModuleBase> _loadedModules = [];
 
     /// <summary>
-    /// Register module without hot reload state.
+    /// Register module.
     /// </summary>
     /// <typeparam name="T">Any classes that inherited a PluginModuleBase</typeparam>
     protected T RegisterModule<T>() where T : PluginModuleBase
     {
-        var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
+        var moduleType = typeof(T);
+
+        T module = (T)ActivatorUtilities.CreateInstance(ServiceProvider, moduleType, _hotReload);
+
         _loadedModules.Add(module);
         module.Initialize();
         module.RegisterServices(ServiceCollection);
-        // Rebuild, because some modules are depend on other modules.
-        // And if the module is API or something, required before call OnAllPluginsLoaded.
         RebuildServiceProvider();
         Logger.LogInformation($"{module.PluginModuleName} has been initialized");
         return module;
     }
 
     /// <summary>
-    /// Register module with hot reload state.
+    /// Helper method to discover types under a specific namespace that inherit from a base type.
     /// </summary>
-    /// <typeparam name="T">Any classes that inherited a PluginModuleBase</typeparam>
-    protected void RegisterModule<T>(bool hotReload) where T : PluginModuleBase
+    /// <typeparam name="TBase">The base type to search for</typeparam>
+    /// <param name="assembly">The assembly to search in</param>
+    /// <param name="nameSpace">The namespace to search</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces</param>
+    /// <returns>List of types that match the criteria</returns>
+    private List<Type> GetTypesUnderNamespace<TBase>(Assembly assembly, string nameSpace, bool includeSubNamespaces)
     {
-        var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider, hotReload)!;
-        _loadedModules.Add(module);
-        module.Initialize();
-        module.RegisterServices(ServiceCollection);
-        // Rebuild, because some modules are depend on other modules.
-        // And if the module is API or something, required before call OnAllPluginsLoaded.
-        RebuildServiceProvider();
-        Logger.LogInformation($"{module.PluginModuleName} has been initialized");
+        if (string.IsNullOrWhiteSpace(nameSpace))
+            throw new ArgumentException("Namespace cannot be null or whitespace.", nameof(nameSpace));
+
+        if (nameSpace.EndsWith(".", StringComparison.Ordinal))
+            throw new ArgumentException("Namespace should not end with a period.", nameof(nameSpace));
+
+        try
+        {
+            return assembly.GetTypes()
+                .Where(t => t.Namespace != null &&
+                            (includeSubNamespaces
+                                ? t.Namespace == nameSpace || t.Namespace.StartsWith(nameSpace + ".", StringComparison.Ordinal)
+                                : t.Namespace == nameSpace) &&
+                            t.IsClass &&
+                            !t.IsAbstract &&
+                            typeof(TBase).IsAssignableFrom(t))
+                .ToList();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            Logger.LogError(ex, "Failed to load types from assembly {assemblyName} while searching for {baseType} under namespace {namespace}",
+                assembly.FullName, typeof(TBase).Name, nameSpace);
+
+            foreach (var loaderException in ex.LoaderExceptions.Where(e => e != null))
+            {
+                Logger.LogError(loaderException, "Loader exception: {loaderExceptionMessage}", loaderException!.Message);
+            }
+
+            return new List<Type>();
+        }
+    }
+
+    /// <summary>
+    /// Helper method to discover and process types under a namespace.
+    /// </summary>
+    /// <typeparam name="TBase">The base type to search for</typeparam>
+    /// <param name="nameSpace">The namespace to search</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces</param>
+    /// <param name="typeDisplayName">Display name for logging (e.g., "module", "command")</param>
+    /// <param name="processType">Action to process each discovered type</param>
+    private void DiscoverAndProcessTypes<TBase>(string nameSpace, bool includeSubNamespaces, string typeDisplayName, Action<Type> processType)
+    {
+        var assembly = GetType().Assembly;
+        var types = GetTypesUnderNamespace<TBase>(assembly, nameSpace, includeSubNamespaces);
+
+        if (types.Count == 0)
+        {
+            Logger.LogWarning($"No {typeDisplayName}s found under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+            return;
+        }
+
+        Logger.LogInformation($"Found {types.Count} {typeDisplayName}(s) under namespace '{nameSpace}'{(includeSubNamespaces ? " (including sub-namespaces)" : "")}");
+
+        foreach (var type in types)
+        {
+            try
+            {
+                processType(type);
+            }
+            catch (Exception ex)
+            {
+                if (ex is TargetInvocationException { InnerException: { } innerException })
+                {
+                    ex = innerException;
+                }
+                Logger.LogError(ex, $"Failed to register {typeDisplayName} '{type.Name}'");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Automatically discovers and registers all PluginModuleBase-derived classes under the specified namespace.
+    /// </summary>
+    /// <param name="nameSpace">The namespace to search for modules</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    protected void RegisterModulesUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    {
+        DiscoverAndProcessTypes<PluginModuleBase>(nameSpace, includeSubNamespaces, "module", moduleType =>
+        {
+            var registerMethod = GetType()
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .SingleOrDefault(m => m.Name == nameof(RegisterModule) &&
+                                     m.IsGenericMethodDefinition &&
+                                     m.GetParameters().Length == 0)
+                ?.MakeGenericMethod(moduleType);
+
+            if (registerMethod == null)
+            {
+                Logger.LogError($"Failed to get RegisterModule method for type '{moduleType.Name}'");
+                return;
+            }
+
+            registerMethod.Invoke(this, null);
+        });
     }
 
     private void CallModulesAllPluginsLoaded()
@@ -415,6 +507,21 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
     {
         var command = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
         AddTnmsCommand(command);
+    }
+
+    /// <summary>
+    /// Automatically discovers and registers all TnmsAbstractCommandBase-derived classes under the specified namespace.
+    /// </summary>
+    /// <param name="nameSpace">The namespace to search for commands</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    public void AddTnmsCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    {
+        DiscoverAndProcessTypes<TnmsAbstractCommandBase>(nameSpace, includeSubNamespaces, "command", commandType =>
+        {
+            var command = (TnmsAbstractCommandBase)ActivatorUtilities.CreateInstance(ServiceProvider, commandType);
+
+            AddTnmsCommand(command);
+        });
     }
 
     /// <summary>

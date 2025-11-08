@@ -113,6 +113,16 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider) : Plugi
         var module = (T)Activator.CreateInstance(typeof(T), ServiceProvider)!;
         Plugin.AddTnmsCommand(module);
     }
+
+    /// <summary>
+    /// Automatically discovers and registers all TnmsAbstractCommandBase-derived classes under the specified namespace.
+    /// </summary>
+    /// <param name="nameSpace">The namespace to search for commands</param>
+    /// <param name="includeSubNamespaces">If true, includes classes from sub-namespaces. Default is false (only direct namespace).</param>
+    protected void AddCommandsUnderNamespace(string nameSpace, bool includeSubNamespaces = false)
+    {
+        Plugin.AddTnmsCommandsUnderNamespace(nameSpace, includeSubNamespaces);
+    }
     
     /// <summary>
     /// Add ConVar to tracking list. if you want to generate config automatically, then call this method with ConVar that you wanted to track.
