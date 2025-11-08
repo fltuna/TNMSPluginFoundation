@@ -23,7 +23,7 @@ public static class EntityUtil
     /// </summary>
     /// <param name="csTeam">Team to want to obtain</param>
     /// <returns>Returns CCSTeam instance if found. Otherwise null</returns>
-    public static ITeamManager? GetTeam(CStrikeTeam csTeam)
+    public static IBaseTeam? GetTeam(CStrikeTeam csTeam)
     {
         return TnmsPlugin.StaticSharedSystem.GetEntityManager().GetGlobalCStrikeTeam(csTeam);
     }
