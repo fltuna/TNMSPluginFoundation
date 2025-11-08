@@ -319,7 +319,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
             return assembly.GetTypes()
                 .Where(t => t.Namespace != null &&
                             (includeSubNamespaces
-                                ? t.Namespace.StartsWith(nameSpace, StringComparison.Ordinal)
+                                ? t.Namespace == nameSpace || t.Namespace.StartsWith(nameSpace + ".", StringComparison.Ordinal)
                                 : t.Namespace == nameSpace) &&
                             t.IsClass &&
                             !t.IsAbstract &&
