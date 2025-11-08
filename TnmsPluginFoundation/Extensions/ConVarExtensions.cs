@@ -29,7 +29,7 @@ public static class ConVarExtensions
             case ConVarType.Float32:
                 return cvar.Get().AsFloat.ToString(CultureInfo.InvariantCulture);
             case ConVarType.Float64:
-                return cvar.Get().AsFloat.ToString(CultureInfo.InvariantCulture);
+                return cvar.Get().AsDouble.ToString(CultureInfo.InvariantCulture);
             case ConVarType.String:
                 return cvar.Get().AsString;
             case ConVarType.Color:
