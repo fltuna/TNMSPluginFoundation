@@ -136,7 +136,7 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider, bool ho
     /// <param name="conVar">Any FakeConVar</param>
     protected void TrackConVar(IConVar conVar)
     {
-        ConVarConfigurationService.TrackConVar(PluginModuleName ,conVar);
+        ConVarConfigurationService.TrackConVar(conVar, PluginModuleName);
     }
 
     /// <summary>
