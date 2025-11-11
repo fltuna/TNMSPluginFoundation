@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared.Objects;
+using TnmsPluginFoundation.Extensions;
 
 namespace TnmsPluginFoundation;
 
@@ -12,18 +13,21 @@ namespace TnmsPluginFoundation;
 /// <param name="plugin">Instance of <see cref="TnmsPlugin"/></param>
 public class ConVarConfigurationService(TnmsPlugin plugin)
 {
-    private readonly Dictionary<string, List<object>> _moduleConVars = new();
+    private readonly Dictionary<string, List<IConVar>> _moduleConVars = new();
     
     /// <summary>
     /// Add ConVar to the list of ConVars to be saved in the config file.
     /// </summary>
     /// <param name="moduleName">ModuleName should be unique, otherwise overriden to new one</param>
     /// <param name="conVar">FakeConVar</param>
-    public void TrackConVar(string moduleName, IConVar conVar)
+    public void TrackConVar(IConVar conVar, string? moduleName = null)
     {
+        if (moduleName == null)
+            moduleName = plugin.DisplayName;
+        
         if (!_moduleConVars.TryGetValue(moduleName, out var list))
         {
-            list = new List<object>();
+            list = new List<IConVar>();
             _moduleConVars[moduleName] = list;
         }
         
@@ -47,19 +51,18 @@ public class ConVarConfigurationService(TnmsPlugin plugin)
                 writer.WriteLine($"// ===== {moduleName} =====");
                 writer.WriteLine();
                 
-                foreach (var conVarObj in _moduleConVars[moduleName])
+                foreach (var conVar in _moduleConVars[moduleName])
                 {
-                    dynamic conVar = conVarObj;
-                    writer.WriteLine($"// {conVar.Description}");
+                    writer.WriteLine($"// {conVar.HelpString}");
                     
-                    if (conVarObj.GetType().GenericTypeArguments[0] == typeof(bool))
+                    if (conVar.GetType().GenericTypeArguments[0] == typeof(bool))
                     {
-                        bool value = conVar.Value;
+                        bool value = conVar.GetBool();
                         writer.WriteLine($"{conVar.Name} {Convert.ToInt32(value)}");
                     }
                     else
                     {
-                        writer.WriteLine($"{conVar.Name} {conVar.Value}");
+                        writer.WriteLine($"{conVar.Name} {conVar.GetCvarValueString()}");
                     }
                     
                     writer.WriteLine();
