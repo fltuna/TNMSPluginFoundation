@@ -1,10 +1,10 @@
 <Project>
     <PropertyGroup>
-        <Version>0.0.5</Version>
+        <Version>0.0.6</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Copyright>© 2025 faketuna</Copyright>
         <RepositoryUrl>https://github.com/fltuna/TNMSPluginFoundation</RepositoryUrl>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>13</LangVersion>
         <ImplicitUsings>false</ImplicitUsings>
         <Nullable>enable</Nullable>

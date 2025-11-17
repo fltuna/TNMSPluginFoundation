@@ -3,13 +3,12 @@
     <Import Project="..\config.props" />
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.69" ExcludeAssets="runtime" />
+        <PackageReference Include="ModSharp.Sharp.Shared" Version="2.1.79" ExcludeAssets="runtime" />
         <ProjectReference Include="..\TnmsPluginFoundation\TnmsPluginFoundation.csproj" Private="false" ExcludeAssets="runtime" PrivateAssets="runtime"/>
     </ItemGroup>
 </Project>
