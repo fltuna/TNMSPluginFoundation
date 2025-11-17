@@ -52,7 +52,7 @@ echo Building shared projects (Phase 1 - Base projects)...
 for %%P in (%SHARED_PROJECTS_PHASE1%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net10.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -72,7 +72,7 @@ echo Building shared projects (Phase 2 - Dependent projects)...
 for %%P in (%SHARED_PROJECTS_PHASE2%) do (
     if exist "%%P\%%P.csproj" (
         echo Building shared project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net10.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -92,7 +92,7 @@ echo Building build-only shared projects...
 for %%P in (%BUILD_ONLY_SHARED_PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building build-only shared project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
+        dotnet publish %%P/%%P.csproj -f net10.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/shared/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
@@ -105,7 +105,7 @@ echo Building main projects...
 for %%P in (%PROJECTS%) do (
     if exist "%%P\%%P.csproj" (
         echo Building project: %%P
-        dotnet publish %%P/%%P.csproj -f net9.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/modules/%%P"
+        dotnet publish %%P/%%P.csproj -f net10.0 -r %PLATFORM% --disable-build-servers --no-self-contained -c Release -p:DebugType=None -p:DebugSymbols=false --output ".build/modules/%%P"
         if !ERRORLEVEL! neq 0 (
             echo Error publishing %%P
             exit /b 1
