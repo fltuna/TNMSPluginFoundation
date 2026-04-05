@@ -112,7 +112,7 @@ public abstract class AbstractDebugLoggerBase: IDebugLogger
                 return;
             
             
-            foreach (var client in TnmsPlugin.StaticSharedSystem.GetModSharp().GetIServer().GetGameClients())
+            foreach (var client in TnmsPlugin.StaticSharedSystem.GetModSharp().GetIServer().GetGameClients(true, true))
             {
                 if (client.IsFakeClient || client.IsHltv)
                     continue;

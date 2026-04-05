@@ -176,7 +176,7 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider, bool ho
     protected void PrintLocalizedChatToAllWithModulePrefix(string localizationKey)
     {
         
-        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients())
+        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients(true, true))
         {
             if (client.IsFakeClient || client.IsHltv)
                 continue;
@@ -198,7 +198,7 @@ public abstract class PluginModuleBase(IServiceProvider serviceProvider, bool ho
     protected void PrintLocalizedChatToAllWithModulePrefix(string localizationKey, params object[] args)
     {
         
-        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients())
+        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients(true, true))
         {
             if (client.IsFakeClient || client.IsHltv)
                 continue;

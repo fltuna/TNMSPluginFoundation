@@ -13,6 +13,7 @@ using TnmsAdministrationPlatform.Shared;
 using TnmsExtendableTargeting.Shared;
 using TnmsLocalizationPlatform.Shared;
 using TnmsPluginFoundation.Interfaces;
+using TnmsPluginFoundation.Models.Admin;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Logger;
 using TnmsPluginFoundation.Models.Plugin;
@@ -57,7 +58,7 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
 
     public static IExtendableTargeting ExtendableTargeting { get; private set; } = null!;
 
-    public static IAdminManager AdminManager { get; private set; } = null!;
+    public static ITnmsPlfdAdminManager AdminManager { get; private set; } = null!;
 
 
     public ITnmsLocalizer Localizer { get; private set; } = null!;
@@ -238,8 +239,19 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
         ConVarConfigurationService.SaveAllConfigToFile();
         ConVarConfigurationService.ExecuteConfigs();
 
-        var adminSystem = _sharedSystem.GetSharpModuleManager().GetRequiredSharpModuleInterface<IAdminManager>(IAdminManager.ModSharpModuleIdentity).Instance;
-        AdminManager = adminSystem ?? throw new InvalidOperationException("TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!");
+        var customAdminManager = CreateAdminManager();
+        if (customAdminManager != null)
+        {
+            AdminManager = customAdminManager;
+        }
+        else
+        {
+            var adminSystem = _sharedSystem.GetSharpModuleManager()
+                .GetRequiredSharpModuleInterface<IAdminManager>(IAdminManager.ModSharpModuleIdentity).Instance;
+            AdminManager = new TnmsAdminManagerWrapper(
+                adminSystem ?? throw new InvalidOperationException(
+                    "TnmsAdministrationPlatform is not found! Make sure TnmsAdministrationPlatform is installed!"));
+        }
 
         var extendableTargeting = _sharedSystem.GetSharpModuleManager()
             .GetRequiredSharpModuleInterface<IExtendableTargeting>(IExtendableTargeting.ModSharpModuleIdentity).Instance;
@@ -254,6 +266,13 @@ public abstract partial class TnmsPlugin: IModSharpModule, ILocalizableModule
                                    "TnmsLocalizationPlatform is not found! Make sure TnmsLocalizationPlatform is installed!");
         Localizer = LocalizationPlatform.CreateStringLocalizer(this);
     }
+
+    /// <summary>
+    /// Override this method to provide a custom admin manager implementation. <br/>
+    /// Return null to use the default TnmsAdministrationPlatform wrapper.
+    /// </summary>
+    /// <returns>Custom ITnmsPlfdAdminManager implementation, or null for default</returns>
+    protected virtual ITnmsPlfdAdminManager? CreateAdminManager() => null;
 
     /// <summary>
     /// This method is can be used to late initialize plugin feature.

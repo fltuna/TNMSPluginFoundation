@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
-using TnmsAdministrationPlatform.Shared;
 using TnmsPluginFoundation.Extensions.Client;
+using TnmsPluginFoundation.Models.Admin;
 using TnmsPluginFoundation.Models.Command;
 using TnmsPluginFoundation.Models.Command.Validators;
 
@@ -29,7 +29,7 @@ public class RemovePermission(IServiceProvider provider) : TnmsAbstractCommandBa
             return;
         var permission = commandInfo.GetArg(1);
 
-        if (TnmsPlugin.AdminManager.RemovePermissionFromClient(client, permission) == PermissionSaveResult.Success)
+        if (TnmsPlugin.AdminManager.RemovePermissionFromClient(client, permission) == PermissionModifyResult.Success)
         {
             client.GetPlayerController()!.PrintToChat($"Removed permission '{permission}' from client.");
         }

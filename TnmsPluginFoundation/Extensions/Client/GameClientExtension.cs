@@ -24,6 +24,6 @@ public static class GameClientExtension
     /// <returns></returns>
     public static IPlayerPawn? GetPlayerPawn(this IGameClient client)
     {
-        return TnmsPlugin.StaticSharedSystem.GetEntityManager().FindPlayerPawnBySlot(client.Slot);
+        return TnmsPlugin.StaticSharedSystem.GetEntityManager().FindPlayerPawnBySlot(client.Slot)?.AsPlayerPawn();
     }
 }

@@ -21,7 +21,7 @@ public class PluginTranslatableFeatureBase(IServiceProvider serviceProvider) : P
     /// <param name="args">Any args that can be use ToString()</param>
     protected void PrintLocalizedChatToAll(string localizationKey, params object[] args)
     {
-        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients())
+        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients(true, true))
         {
             if (client.IsFakeClient || client.IsHltv)
                 continue;
@@ -35,7 +35,7 @@ public class PluginTranslatableFeatureBase(IServiceProvider serviceProvider) : P
     /// <param name="localizationKey">Language localization key</param>
     protected void PrintLocalizedChatToAll(string localizationKey)
     {
-        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients())
+        foreach (var client in Plugin.SharedSystem.GetModSharp().GetIServer().GetGameClients(true, true))
         {
             if (client.IsFakeClient || client.IsHltv)
                 continue;
