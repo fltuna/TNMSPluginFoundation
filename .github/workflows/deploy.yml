@@ -22,9 +22,9 @@ jobs:
       extended-artifact-include: modules shared
 
       dependencies: |
-        https://github.com/possession-community/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform.zip
-        https://github.com/possession-community/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting.zip
-        https://github.com/possession-community/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform.zip
+        https://github.com/possession-community/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform-{platform}.zip
+        https://github.com/possession-community/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting-{platform}.zip
+        https://github.com/possession-community/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform-{platform}.zip
 
       shared-dlls-to-remove: |
         TnmsAdministrationPlatform.Shared.dll
