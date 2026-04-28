@@ -3,6 +3,7 @@
   <Import Project="..\config.props" />
 
   <PropertyGroup>
+    <PackageId>TnmsPluginFoundation</PackageId>
     <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
   </PropertyGroup>
 
