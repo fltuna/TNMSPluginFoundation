@@ -1,4 +1,4 @@
-﻿# [TnmsPluginFoundation](https://github.com/fltuna/TNMSPluginFoundation)
+﻿# [TnmsPluginFoundation](https://github.com/possession-community/TNMSPluginFoundation)
 
 TnmsPluginFoundation is a foundational library for developing ModSharp modules, integrating libraries from the Tnms Platform. This library simplifies ModSharp module development and provides common functionality.
 
