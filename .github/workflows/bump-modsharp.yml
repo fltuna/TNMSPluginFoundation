@@ -7,7 +7,7 @@ on:
 
 jobs:
   bump:
-    uses: fltuna/modsharp-publish-action/.github/workflows/bump-nuget.yml@v1
+    uses: possession-community/modsharp-publish-action/.github/workflows/bump-nuget.yml@v1
     permissions:
       contents: write
       pull-requests: write

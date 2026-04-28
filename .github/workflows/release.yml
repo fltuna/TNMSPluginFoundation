@@ -11,7 +11,7 @@ on:
 
 jobs:
   release:
-    uses: fltuna/modsharp-publish-action/.github/workflows/release.yml@v1
+    uses: possession-community/modsharp-publish-action/.github/workflows/release.yml@v1
     permissions:
       contents: write
     with:
