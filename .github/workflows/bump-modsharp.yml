@@ -1,0 +1,19 @@
+name: Bump ModSharp
+
+on:
+  schedule:
+    - cron: '0 15 * * *'  # 00:00 JST (15:00 UTC previous day)
+  workflow_dispatch:
+
+jobs:
+  bump:
+    uses: fltuna/modsharp-publish-action/.github/workflows/bump-nuget.yml@v1
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      package-id: ModSharp.Sharp.Shared
+      csproj-paths: |
+        TnmsPluginFoundation/TnmsPluginFoundation.csproj
+        TnmsPluginFoundation.Example/TnmsPluginFoundation.Example.csproj
+      pr-labels: dependencies
