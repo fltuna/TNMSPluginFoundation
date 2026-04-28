@@ -13,18 +13,18 @@ jobs:
         TnmsPluginFoundation.Example
       shared-projects-phase1: TnmsPluginFoundation
 
-      platforms: linux-x64
+      platforms: linux-x64 win-x64
 
       main-artifact-name: TnmsPluginFoundation-Core
-      main-artifact-include: shared
+      main-artifact-include: modules shared
 
       extended-artifact-name: TnmsPluginFoundation-WithDependencies
-      extended-artifact-include: shared
+      extended-artifact-include: modules shared
 
       dependencies: |
-        https://github.com/fltuna/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform.zip
-        https://github.com/fltuna/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting.zip
-        https://github.com/fltuna/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform.zip
+        https://github.com/possession-community/TnmsAdministrationPlatform/releases/latest/download/TnmsAdministrationPlatform.zip
+        https://github.com/possession-community/TnmsExtendableTargeting/releases/latest/download/TnmsExtendableTargeting.zip
+        https://github.com/possession-community/TnmsLocalizationPlatform/releases/latest/download/TnmsLocalizationPlatform.zip
 
       shared-dlls-to-remove: |
         TnmsAdministrationPlatform.Shared.dll
